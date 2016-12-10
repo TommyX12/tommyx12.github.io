@@ -14,7 +14,7 @@
 	<div class="header">
 		<!-- TODO change this shit to make it better -->
 		<ul class="nav">
-			<li><a href='index.html'>Home</a></li>
+			<li><a href='index.php'>Home</a></li>
 			<li><a href='#'>About</a></li>
 			<li><a href='#'>Contact</a></li>
 		</ul>
@@ -22,6 +22,7 @@
 
 	<div class="main">
 	<div class="main-content">
+	<!--
 		<h1 class="title">The Brown Bear</h1>
 		<p>
 		The brown bear (Ursus arctos) is native to parts of northern Eurasia and North America. Its conservation status is currently "Least Concern." There are many subspecies within the brown bear species, including the Atlas bear and the Himalayan brown bear.
@@ -64,6 +65,7 @@
 				<td colspan="2">42</td>
 			</tfoot>
 		</table>
+	-->
 	</div>
 	</div>
 
