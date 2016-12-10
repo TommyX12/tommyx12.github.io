@@ -31,8 +31,17 @@ h1 {
 	margin: auto;
 }
 
-.header {
+.navbar {
 	background-color: #333333;
+	position: fixed;
+	width: 100%;
+	height: 100%;
+	border-bottom: 2px solid #666666;
+	top: 0;
+	left: 0;
+}
+
+.navbar-frame {
 	position: fixed;
 	width: 100%;
 	z-index: 420;
@@ -42,6 +51,7 @@ h1 {
 	clear: both;
 	top: 0;
 	left: 0;
+	border: none;
 }
 
 .footer {
