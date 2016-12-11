@@ -2,6 +2,9 @@ var images = {
 	phone: {src: 'img/phone.png'},
 
 	icon_grid_slot: {src: 'img/icon_grid/icon_grid_slot.png'},
+	icon_grid_shadow: {src: 'img/icon_grid/icon_grid_shadow.png'},
+	icon_grid_light: {src: 'img/icon_grid/icon_grid_light.png'},
+	icon_grid_lines: {src: 'img/icon_grid/icon_grid_lines.png'},
 
 	bottom_bar_circles: {src: 'img/bottom_bar/bottom_bar_circles.png'},
 	bottom_bar_gradient: {src: 'img/bottom_bar/bottom_bar_gradient.png'},
@@ -18,24 +21,27 @@ var images = {
 };
 
 var options_icon_grid = [
+	{img_name: 'icon_grid_light', text: 'Light'},
+	{img_name: 'icon_grid_shadow', text: 'Shadow'},
 	{img_name: 'icon_grid_slot', text: 'Slot'},
+	{img_name: 'icon_grid_lines', text: 'Lines'},
 ]
 var options_bottom_bar = [
+	{img_name: 'bottom_bar_shadow', text: 'Shadow'},
+	{img_name: 'bottom_bar_light', text: 'Light'},
 	{img_name: 'bottom_bar_circles', text: 'Circles'},
 	{img_name: 'bottom_bar_gradient', text: 'Gradient'},
 	{img_name: 'bottom_bar_grass', text: 'Grass'},
-	{img_name: 'bottom_bar_light', text: 'Light'},
-	{img_name: 'bottom_bar_shadow', text: 'Shadow'},
 ]
 var options_background = [
-	{img_name: 'background_blurry', text: 'Blurry'},
-	{img_name: 'background_blurry2', text: 'Blurry 2'},
-	{img_name: 'background_nightsky', text: 'Night Sky'},
-	{img_name: 'background_purplesky', text: 'Purple Sky'},
 	{img_name: 'background_sky', text: 'Sky'},
 	{img_name: 'background_sky2', text: 'Sky 2'},
+	{img_name: 'background_nightsky', text: 'Night Sky'},
+	{img_name: 'background_purplesky', text: 'Purple Sky'},
+	{img_name: 'background_blurry', text: 'Blurry'},
+	{img_name: 'background_blurry2', text: 'Blurry 2'},
 ]
-var options_icon_grid_fade = {start: 0.05, stop: 0.5, steps: 9}
+var options_icon_grid_fade = {start: 0.15, stop: 0.5, steps: 7}
 
 var icon_grid_sel = images[options_icon_grid[0].img_name];
 var bottom_bar_sel = images[options_bottom_bar[0].img_name];
