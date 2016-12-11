@@ -1,24 +1,45 @@
 var images = {
 	phone: {src: 'img/phone.png'},
-	icon_grid_1: {src: 'img/icon_grid/icon_grid_1.png'},
-	bottom_bar_1: {src: 'img/bottom_bar/bottom_bar_1.png'},
-	background_1: {src: 'img/background/background_1.jpg'},
+
+	icon_grid_slot: {src: 'img/icon_grid/icon_grid_slot.png'},
+
+	bottom_bar_circles: {src: 'img/bottom_bar/bottom_bar_circles.png'},
+	bottom_bar_gradient: {src: 'img/bottom_bar/bottom_bar_gradient.png'},
+	bottom_bar_grass: {src: 'img/bottom_bar/bottom_bar_grass.png'},
+	bottom_bar_light: {src: 'img/bottom_bar/bottom_bar_light.png'},
+	bottom_bar_shadow: {src: 'img/bottom_bar/bottom_bar_shadow.png'},
+
+	background_blurry: {src: 'img/background/background_blurry.png'},
+	background_blurry2: {src: 'img/background/background_blurry2.png'},
+	background_nightsky: {src: 'img/background/background_nightsky.png'},
+	background_purplesky: {src: 'img/background/background_purplesky.png'},
+	background_sky: {src: 'img/background/background_sky.png'},
+	background_sky2: {src: 'img/background/background_sky2.png'},
 };
 
 var options_icon_grid = [
-	{img: images.icon_grid_1, text: 'Test'},
+	{img_name: 'icon_grid_slot', text: 'Slot'},
 ]
 var options_bottom_bar = [
-	{img: images.bottom_bar_1, text: 'Test'},
+	{img_name: 'bottom_bar_circles', text: 'Circles'},
+	{img_name: 'bottom_bar_gradient', text: 'Gradient'},
+	{img_name: 'bottom_bar_grass', text: 'Grass'},
+	{img_name: 'bottom_bar_light', text: 'Light'},
+	{img_name: 'bottom_bar_shadow', text: 'Shadow'},
 ]
 var options_background = [
-	{img: images.background_1, text: 'Test'},
+	{img_name: 'background_blurry', text: 'Blurry'},
+	{img_name: 'background_blurry2', text: 'Blurry 2'},
+	{img_name: 'background_nightsky', text: 'Night Sky'},
+	{img_name: 'background_purplesky', text: 'Purple Sky'},
+	{img_name: 'background_sky', text: 'Sky'},
+	{img_name: 'background_sky2', text: 'Sky 2'},
 ]
-var options_icon_grid_fade = {start: 0.0, stop: 0.5, steps: 10}
+var options_icon_grid_fade = {start: 0.05, stop: 0.5, steps: 9}
 
-var icon_grid_sel = options_icon_grid[0].img;
-var bottom_bar_sel = options_bottom_bar[0].img;
-var background_sel = options_background[0].img;
+var icon_grid_sel = images[options_icon_grid[0].img_name];
+var bottom_bar_sel = images[options_bottom_bar[0].img_name];
+var background_sel = images[options_background[0].img_name];
 var icon_grid_fade = options_icon_grid_fade.start;
 
 var $div_main;
@@ -47,39 +68,40 @@ var bottom_bar_pos = {x: 375, y:1143};
 function setup_options(){
 	for (var i = 0; i < options_icon_grid.length; ++i){
 		var option_data = options_icon_grid[i];
-		var option = new Option(option_data.text, option_data.img);
+		var option = new Option(option_data.text, option_data.img_name);
 		$icon_grid_sel.add(option);
 	}
 	$icon_grid_sel.selectedIndex = 0;
 	$icon_grid_sel.onchange = function(){
-		icon_grid_sel = $icon_grid_sel.options[$icon_grid_sel.selectedIndex].value;
+		icon_grid_sel = images[$icon_grid_sel.options[$icon_grid_sel.selectedIndex].value];
 		render_canvas(true);
 	}
 
 	for (var i = 0; i < options_bottom_bar.length; ++i){
 		var option_data = options_bottom_bar[i];
-		var option = new Option(option_data.text, option_data.img);
+		var option = new Option(option_data.text, option_data.img_name);
 		$bottom_bar_sel.add(option);
 	}
 	$bottom_bar_sel.selectedIndex = 0;
 	$bottom_bar_sel.onchange = function(){
-		bottom_bar_sel = $bottom_bar_sel.options[$bottom_bar_sel.selectedIndex].value;
+		bottom_bar_sel = images[$bottom_bar_sel.options[$bottom_bar_sel.selectedIndex].value];
 		render_canvas(true);
 	}
 
 	for (var i = 0; i < options_background.length; ++i){
 		var option_data = options_background[i];
-		var option = new Option(option_data.text, option_data.img);
+		var option = new Option(option_data.text, option_data.img_name);
 		$background_sel.add(option);
 	}
 	$background_sel.selectedIndex = 0;
 	$background_sel.onchange = function(){
-		background_sel = $background_sel.options[$background_sel.selectedIndex].value;
+		background_sel = images[$background_sel.options[$background_sel.selectedIndex].value];
+		console.log(typeof background_sel);
 		render_canvas(true);
 	}
 	
 	for (var i = 0; i <= options_icon_grid_fade.steps; ++i){
-		var value = (options_icon_grid_fade.stop - options_icon_grid_fade.start) / options_icon_grid_fade.steps * i;
+		var value = (options_icon_grid_fade.stop - options_icon_grid_fade.start) / options_icon_grid_fade.steps * i + options_icon_grid_fade.start;
 		var option = new Option(value.toFixed(2), value);
 		$icon_grid_fade_sel.add(option);
 	}
