@@ -2,9 +2,12 @@
 function render_canvas(){
 	var c = $('#main-canvas')[0];
 	var ctx = c.getContext("2d");
-	ctx.beginPath();
+	var img = new Image();
+	img.src = 'phone.png';
+	ctx.drawImage(img, 0, 0);
+	/*ctx.beginPath();
 	ctx.arc(95,50,40,0,2*Math.PI);
-	ctx.stroke();
+	ctx.stroke();*/
 }
 
 function main(){

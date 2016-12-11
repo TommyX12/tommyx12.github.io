@@ -8,6 +8,10 @@
 	/* padding: 0; */
 }
 
+.invisible {
+	display: none;
+}
+
 .unselectable {
 	-webkit-touch-callout: none;
 	-webkit-user-select: none;
@@ -15,19 +19,6 @@
 	-moz-user-select: none;
 	-ms-user-select: none;
 	user-select: none;
-}
-
-h1 {
-	font-family: Roboto, sans-serif;
-	color: DarkSlateGray;
-	/*background-color: transparent;
-	word-spacing: 0.05em;
-	letter-spacing: 0.02em;
-	text-align: center;
-	width: 60%;
-	text-transform: uppercase;
-	min-width: 100px;
-	margin: auto;*/
 }
 
 .footer {
@@ -68,7 +59,8 @@ h1 {
 #main-canvas {
 	border: 1px solid #000000;
 	margin: auto;
-	width: 50%;
+	width: 85%;
+	max-width: 750px;
 	display: block;
 }
 
@@ -130,7 +122,8 @@ h1 {
 
 body.background {
 	overflow-y: auto;
-	background: url("http://www.desktopwallpaperhd.net/wallpapers/7/a/white-wallpaper-curves-75322.jpg") no-repeat center center;
+	background-color: #e5e5e5;
+	/*background: url("http://www.desktopwallpaperhd.net/wallpapers/7/a/white-wallpaper-curves-75322.jpg") no-repeat center center;*/
 	background-size: cover;
 	background-attachment: fixed;
 }
@@ -144,12 +137,13 @@ body.background {
 .main-content {
 	/*width: 75%;*/
 	max-width: 1400px;
-	border-color: Gray;
+	border-color: #999999;
 	border-style: solid;
 	border-width: 0px 2px;
 	margin: 60px auto;
 	padding: 0px 2% 30px 2%;
-	background: url("http://eskipaper.com/images/white-abstract-wallpaper-2.jpg") no-repeat center center;
+	background-color: #ffffff;
+	/*background: url("http://eskipaper.com/images/white-abstract-wallpaper-2.jpg") no-repeat center center;*/
 	background-size: cover;
 	background-attachment: fixed;
 }
@@ -161,8 +155,22 @@ body.background {
 	/* border-radius: 10px; */
 }
 
+h1 {
+	font-family: Roboto, sans-serif;
+	color: DarkSlateGray;
+	background-color: transparent;
+	word-spacing: 0.05em;
+	letter-spacing: 0.02em;
+	text-align: center;
+	width: 60%;
+	text-transform: uppercase;
+	min-width: 100px;
+	margin: auto;
+}
+
 h2 {
 	font-family: Roboto, sans-serif;
+	text-align: center;
 }
 
 p {
