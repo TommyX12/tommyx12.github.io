@@ -5,15 +5,31 @@ var images = {
 	background_1: {src: 'img/background/background_1.jpg'},
 };
 
-var icon_grid_sel = images.icon_grid_1;
-var bottom_bar_sel = images.bottom_bar_1;
-var background_sel = images.background_1;
-var icon_grid_alpha_fade = 0.15;
+var options_icon_grid = [
+	{img: images.icon_grid_1, text: 'Test'},
+]
+var options_bottom_bar = [
+	{img: images.bottom_bar_1, text: 'Test'},
+]
+var options_background = [
+	{img: images.background_1, text: 'Test'},
+]
+var options_icon_grid_fade = {start: 0.0, stop: 0.5, steps: 10}
+
+var icon_grid_sel = options_icon_grid[0].img;
+var bottom_bar_sel = options_bottom_bar[0].img;
+var background_sel = options_background[0].img;
+var icon_grid_fade = options_icon_grid_fade.start;
 
 var $div_main;
 var $div_main_content;
 var $main_canvas;
 var $main_canvas_context;
+
+var $icon_grid_sel;
+var $bottom_bar_sel;
+var $background_sel;
+var $icon_grid_fade_sel;
 
 
 var icon_grid_pos = [];
@@ -27,6 +43,53 @@ for (var i = 0; i < 6; i++){
 
 var bottom_bar_pos = {x: 375, y:1143};
 
+
+function setup_options(){
+	for (var i = 0; i < options_icon_grid.length; ++i){
+		var option_data = options_icon_grid[i];
+		var option = new Option(option_data.text, option_data.img);
+		$icon_grid_sel.add(option);
+	}
+	$icon_grid_sel.selectedIndex = 0;
+	$icon_grid_sel.onchange = function(){
+		icon_grid_sel = $icon_grid_sel.options[$icon_grid_sel.selectedIndex].value;
+		render_canvas(true);
+	}
+
+	for (var i = 0; i < options_bottom_bar.length; ++i){
+		var option_data = options_bottom_bar[i];
+		var option = new Option(option_data.text, option_data.img);
+		$bottom_bar_sel.add(option);
+	}
+	$bottom_bar_sel.selectedIndex = 0;
+	$bottom_bar_sel.onchange = function(){
+		bottom_bar_sel = $bottom_bar_sel.options[$bottom_bar_sel.selectedIndex].value;
+		render_canvas(true);
+	}
+
+	for (var i = 0; i < options_background.length; ++i){
+		var option_data = options_background[i];
+		var option = new Option(option_data.text, option_data.img);
+		$background_sel.add(option);
+	}
+	$background_sel.selectedIndex = 0;
+	$background_sel.onchange = function(){
+		background_sel = $background_sel.options[$background_sel.selectedIndex].value;
+		render_canvas(true);
+	}
+	
+	for (var i = 0; i <= options_icon_grid_fade.steps; ++i){
+		var value = (options_icon_grid_fade.stop - options_icon_grid_fade.start) / options_icon_grid_fade.steps * i;
+		var option = new Option(value.toFixed(2), value);
+		$icon_grid_fade_sel.add(option);
+	}
+	$icon_grid_fade_sel.selectedIndex = 0;
+	$icon_grid_fade_sel.onchange = function(){
+		icon_grid_fade = $icon_grid_fade_sel.options[$icon_grid_fade_sel.selectedIndex].value;
+		render_canvas(true);
+	}
+
+}
 
 /*
  * 116, 124
@@ -107,7 +170,7 @@ function render_canvas(draw_extra=true){
 			for (var j = 0; j < icon_grid_pos[i].length; ++j){
 				canvas_draw_image_centered(c, ctx, icon_grid_sel.obj, icon_grid_pos[i][j].x, icon_grid_pos[i][j].y, icon_grid_alpha);
 			}
-			icon_grid_alpha -= icon_grid_alpha_fade;
+			icon_grid_alpha -= icon_grid_fade;
 		}
 	}
 
@@ -118,10 +181,14 @@ function render_canvas(draw_extra=true){
 
 function assets_loaded(){
 	// $div_main.fadeIn(500);
+	
+	setup_options();
+	
 	$div_main.fadeIn(500);
 	$div_main_content.slideDown(500);
 
 	$('#btn-save').on('click', function(){
+		render_canvas(true);
 		window.open($main_canvas.toDataURL());
 	});
 
@@ -141,6 +208,11 @@ function main(){
 	$div_main_content = $('.main-content');
 	$div_main.hide();
 	$div_main_content.hide();
+
+	$icon_grid_sel = $('#icon-grid-sel')[0];
+	$bottom_bar_sel = $('#bottom-bar-sel')[0];
+	$background_sel = $('#background-sel')[0];
+	$icon_grid_fade_sel = $('#icon-grid-fade-sel')[0];
 
 	load_assets();
 }
