@@ -64,6 +64,12 @@
 	display: block;
 }
 
+#btn-save {
+	margin: 30px auto;
+	display: block;
+}
+
+
 /*.navbar {
 	background-color: #333333;
 	position: fixed;

@@ -10,6 +10,11 @@ var bottom_bar_sel = images.bottom_bar_1;
 var background_sel = images.background_1;
 var icon_grid_alpha_fade = 0.15;
 
+var $div_main;
+var $div_main_content;
+var $main_canvas;
+var $main_canvas_context;
+
 
 var icon_grid_pos = [];
 for (var i = 0; i < 6; i++){
@@ -85,8 +90,8 @@ function canvas_clear(c, ctx){
 }
 
 function render_canvas(){
-	var c = $('#main-canvas')[0];
-	var ctx = c.getContext("2d");
+	var c = $main_canvas;
+	var ctx = $main_canvas_context;
 	canvas_clear(c, ctx);
 
 	// background
@@ -110,17 +115,24 @@ function render_canvas(){
 }
 
 function assets_loaded(){
+	// $div_main.fadeIn(500);
+	$div_main.fadeIn(500);
+	$div_main_content.slideDown(500);
+
+	$('#btn-save').on('click', function(){
+		window.open($main_canvas.toDataURL());
+	});
+
 	render_canvas();
 }
 
 function main(){
-	var div_main = $('.main');
-	var div_main_content = $('.main-content');
-	div_main.hide();
-	div_main_content.hide();
-	// div_main.fadeIn(500);
-	div_main.fadeIn(500);
-	div_main_content.slideDown(500);
+	$main_canvas = $('#main-canvas')[0];
+	$main_canvas_context = $main_canvas.getContext("2d");
+	$div_main = $('.main');
+	$div_main_content = $('.main-content');
+	$div_main.hide();
+	$div_main_content.hide();
 
 	load_assets();
 }
