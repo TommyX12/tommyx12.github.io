@@ -1,5 +1,6 @@
 var images = {
 	phone: {src: 'img/phone.png'},
+	empty: {src: 'img/empty.png'},
 
 	icon_grid_slot: {src: 'img/icon_grid/icon_grid_slot.png'},
 	icon_grid_shadow: {src: 'img/icon_grid/icon_grid_shadow.png'},
@@ -25,6 +26,7 @@ var options_icon_grid = [
 	{img_name: 'icon_grid_shadow', text: 'Shadow'},
 	{img_name: 'icon_grid_slot', text: 'Slot'},
 	{img_name: 'icon_grid_lines', text: 'Lines'},
+	{img_name: 'empty', text: 'None'},
 ]
 var options_bottom_bar = [
 	{img_name: 'bottom_bar_shadow', text: 'Shadow'},
@@ -32,6 +34,7 @@ var options_bottom_bar = [
 	{img_name: 'bottom_bar_circles', text: 'Circles'},
 	{img_name: 'bottom_bar_gradient', text: 'Gradient'},
 	{img_name: 'bottom_bar_grass', text: 'Grass'},
+	{img_name: 'empty', text: 'None'},
 ]
 var options_background = [
 	{img_name: 'background_sky', text: 'Sky'},
