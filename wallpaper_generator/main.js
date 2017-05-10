@@ -1,4 +1,4 @@
-var image_path = '../img';
+var image_path = 'images/';
 
 var images = {
 	phone: {src: 'phone.png'},
@@ -156,7 +156,7 @@ function load_assets(){
 		if (images.hasOwnProperty(key)) {
 			images[key].loaded = false;
 			images[key].obj = new Image();
-			images[key].obj.src = image_path + '/' + images[key].src;
+			images[key].obj.src = image_path + images[key].src;
 			images[key].obj.onload = function(){
 				images[key].loaded = true;
 				num_loaded++;
