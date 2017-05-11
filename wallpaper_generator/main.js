@@ -217,8 +217,10 @@ function assets_loaded(){
 	
 	setup_options();
 	
-	$div_main.fadeIn(500);
-	$div_main_content.slideDown(500);
+	// $div_main.fadeIn(500);
+	// $div_main_content.slideDown(500);
+	$div_main.show();
+	$div_main_content.show();
 
 	$('#btn-save').on('click', function(){
 		render_canvas(true);
