@@ -52,6 +52,7 @@ function test_game() {
 		
 		obstacle_group = game.add.group();
 		obstacle_group.enableBody = true;
+		obstacle_group.physicsBodyType = Phaser.Physics.ARCADE;
 		
 		ground = game.add.sprite(0, game.world.height - 128, 'ground');
 		ground.scale.setTo(2, 4);

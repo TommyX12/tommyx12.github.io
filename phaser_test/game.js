@@ -1,209 +1,320 @@
-
-function InputManager(game) {
+function start_game() {
 	
-	function InputHelper() {
+	function InputManager(game) {
+		
+		function InputHelper() {
+			
+			var self = new Object();
+			
+			self.pressed_detected  = {};
+			self.released_detected = {};
+			self.pressed_once      = {};
+			self.holding           = {};
+			self.released_once     = {};
+			
+			self.any_pressed_once  = false;
+			self.any_released_once = false;
+			self.any_holding       = false;
+			
+			self.pressed = function (key) {
+				key = key.toString();
+				if (self.holding[key] !== true) {
+					self.pressed_detected[key] = true;
+				}
+			}
+			
+			self.released = function (key) {
+				key = key.toString();
+				if (self.holding[key] === true) {
+					self.released_detected[key] = true;
+				}
+			}
+			
+			self.is_pressed_once = function (key) {
+				key = key.toString();
+				return self.pressed_once.hasOwnProperty(key) ? self.pressed_once[key] : false;
+			}
+			
+			self.is_released_once = function (key) {
+				key = key.toString();
+				return self.released_once.hasOwnProperty(key) ? self.released_once[key] : false;
+			}
+			
+			self.is_holding = function (key) {
+				key = key.toString();
+				return self.holding.hasOwnProperty(key) ? self.holding[key] : false;
+			}
+			
+			self.is_any_pressed_once = function () {
+				return self.any_pressed_once;
+			}
+			
+			self.is_any_released_once = function () {
+				return self.any_released_once;
+			}
+			
+			self.is_any_holding = function () {
+				return self.any_holding;
+			}
+			
+			self.update = function () {
+				for (var key in self.pressed_once) {
+					if (self.pressed_once.hasOwnProperty(key)) {
+						self.pressed_once[key] = false;
+					}
+				}
+				self.any_pressed_once = false;
+				
+				for (var key in self.released_once) {
+					if (self.released_once.hasOwnProperty(key)) {
+						self.released_once[key] = false;
+					}
+				}
+				self.any_released_once = false;
+				
+				for (var key in self.pressed_detected) {
+					if (self.pressed_detected.hasOwnProperty(key)) {
+						if (self.pressed_detected[key] === true) {
+							self.pressed_once[key] = true;
+							self.any_pressed_once = true;
+							self.pressed_detected[key] = false;
+							self.holding[key] = true;
+						}
+					}
+				}
+				
+				for (var key in self.released_detected) {
+					if (self.released_detected.hasOwnProperty(key)) {
+						if (self.released_detected[key] === true) {
+							self.released_once[key] = true;
+							self.any_released_once = true;
+							self.released_detected[key] = false;
+							self.holding[key] = false;
+						}
+					}
+				}
+				
+				self.any_holding = false;
+				for (var key in self.holding) {
+					if (self.holding.hasOwnProperty(key)) {
+						if (self.holding[key] === true) {
+							self.any_holding = true;
+							break;
+						}
+					}
+				}
+			}
+			
+			return self;
+
+		}
 		
 		var self = new Object();
 		
-		self.pressed_detected  = {};
-		self.released_detected = {};
-		self.pressed_once      = {};
-		self.holding           = {};
-		self.released_once     = {};
+		self.mouse_helper    = InputHelper();
+		self.key_helper      = InputHelper();
 		
-		self.any_pressed_once  = false;
-		self.any_released_once = false;
-		self.any_holding       = false;
-		
-		self.pressed = function (key) {
-			key = key.toString();
-			if (self.holding[key] !== true) {
-				self.pressed_detected[key] = true;
-			}
+		self.mouse_pressed = function () {
+			self.mouse_helper.pressed(0);
 		}
 		
-		self.released = function (key) {
-			key = key.toString();
-			if (self.holding[key] === true) {
-				self.released_detected[key] = true;
-			}
+		self.mouse_released = function () {
+			self.mouse_helper.released(0);
 		}
 		
-		self.is_pressed_once = function (key) {
-			key = key.toString();
-			return self.pressed_once.hasOwnProperty(key) ? self.pressed_once[key] : false;
+		self.key_pressed = function (event) {
+			self.key_helper.pressed(event.keyCode);
 		}
 		
-		self.is_released_once = function (key) {
-			key = key.toString();
-			return self.released_once.hasOwnProperty(key) ? self.released_once[key] : false;
-		}
-		
-		self.is_holding = function (key) {
-			key = key.toString();
-			return self.holding.hasOwnProperty(key) ? self.holding[key] : false;
-		}
-		
-		self.is_any_pressed_once = function () {
-			return self.any_pressed_once;
-		}
-		
-		self.is_any_released_once = function () {
-			return self.any_released_once;
-		}
-		
-		self.is_any_holding = function () {
-			return self.any_holding;
+		self.key_released = function (event) {
+			self.key_helper.released(event.keyCode);
 		}
 		
 		self.update = function () {
-			for (var key in self.pressed_once) {
-				if (self.pressed_once.hasOwnProperty(key)) {
-					self.pressed_once[key] = false;
-				}
-			}
-			self.any_pressed_once = false;
-			
-			for (var key in self.released_once) {
-				if (self.released_once.hasOwnProperty(key)) {
-					self.released_once[key] = false;
-				}
-			}
-			self.any_released_once = false;
-			
-			for (var key in self.pressed_detected) {
-				if (self.pressed_detected.hasOwnProperty(key)) {
-					if (self.pressed_detected[key] === true) {
-						self.pressed_once[key] = true;
-						self.any_pressed_once = true;
-						self.pressed_detected[key] = false;
-						self.holding[key] = true;
-					}
-				}
-			}
-			
-			for (var key in self.released_detected) {
-				if (self.released_detected.hasOwnProperty(key)) {
-					if (self.released_detected[key] === true) {
-						self.released_once[key] = true;
-						self.any_released_once = true;
-						self.released_detected[key] = false;
-						self.holding[key] = false;
-					}
-				}
-			}
-			
-			self.any_holding = false;
-			for (var key in self.holding) {
-				if (self.holding.hasOwnProperty(key)) {
-					if (self.holding[key] === true) {
-						self.any_holding = true;
-						break;
-					}
-				}
-			}
+			self.mouse_helper.update();
+			self.key_helper.update();
 		}
+		
+		self.is_mouse_pressed_once = function () {
+			return self.mouse_helper.is_pressed_once(0);
+		}
+		
+		self.is_mouse_released_once = function () {
+			return self.mouse_helper.is_released_once(0);
+		}
+		
+		self.is_mouse_holding = function () {
+			return self.mouse_helper.is_holding(0);
+		}
+		
+		self.is_key_pressed_once = function (key) {
+			return self.key_helper.is_pressed_once(key);
+		}
+		
+		self.is_key_released_once = function (key) {
+			return self.key_helper.is_released_once(key);
+		}
+		
+		self.is_key_holding = function (key) {
+			return self.key_helper.is_holding(key);
+		}
+		
+		self.is_any_mouse_pressed_once = function () {
+			return self.mouse_helper.is_any_pressed_once();
+		}
+		
+		self.is_any_mouse_released_once = function () {
+			return self.mouse_helper.is_any_released_once();
+		}
+		
+		self.is_any_mouse_holding = function () {
+			return self.mouse_helper.is_any_holding();
+		}
+		
+		self.is_any_key_pressed_once = function () {
+			return self.key_helper.is_any_pressed_once();
+		}
+		
+		self.is_any_key_released_once = function () {
+			return self.key_helper.is_any_released_once();
+		}
+		
+		self.is_any_key_holding = function () {
+			return self.key_helper.is_any_holding();
+		}
+		
+		game.input.onDown.add(self.mouse_pressed);
+		game.input.onUp.add(self.mouse_released);
+		game.input.keyboard.onDownCallback = self.key_pressed;
+		game.input.keyboard.onUpCallback = self.key_released;
 		
 		return self;
 
 	}
 	
-	var self = new Object();
-	
-	self.mouse_helper    = InputHelper();
-	self.key_helper      = InputHelper();
-	
-	self.mouse_pressed = function () {
-		self.mouse_helper.pressed(0);
+	function SpritePool(min_count, physics_type) {
+		var self = game.add.group();
+		
+		self.min_count = Math.max(0, min_count);
+		if (physics_type != null) {
+			self.enableBody = true;
+			self.physicsBodyType = physics_type;
+		}
+		self.createMultiple(min_count);
+		// self.setAll('checkWorldBounds', true);
+		// self.setAll('outOfBoundsKill', true);
+		
+		self.auto_destroy_delay = 60; // in frames
+		self.auto_destroy_delay_timer = 0;
+		
+		self.get_new = function () {
+			var sprite;
+			if (self.countDead() > 0) {
+				sprite = self.getFirstDead();
+			}
+			else {
+				sprite = self.create(0, 0);
+			}
+			sprite.reset(0, 0);
+			return sprite;
+		}
+		
+		self.update_children = function () {
+			for (var i = 0; i < self.children.length; ++i) {
+				self.children[i].update();
+			}
+		}
+		
+		self.update = function () {
+			if (self.auto_destroy_delay > 0 && self.auto_destroy_delay_timer >= self.auto_destroy_delay) {
+				if (self.countDead() > self.min_count) {
+					self.getFirstDead().destroy();
+				}
+				self.auto_destroy_delay_timer = 0;
+			}
+			self.auto_destroy_delay_timer++;
+			
+			self.update_children();
+		}
+		
+		return self;
 	}
-	
-	self.mouse_released = function () {
-		self.mouse_helper.released(0);
-	}
-	
-	self.key_pressed = function (event) {
-		self.key_helper.pressed(event.keyCode);
-	}
-	
-	self.key_released = function (event) {
-		self.key_helper.released(event.keyCode);
-	}
-	
-	self.update = function () {
-		self.mouse_helper.update();
-		self.key_helper.update();
-	}
-	
-	self.is_mouse_pressed_once = function () {
-		return self.mouse_helper.is_pressed_once(0);
-	}
-	
-	self.is_mouse_released_once = function () {
-		return self.mouse_helper.is_released_once(0);
-	}
-	
-	self.is_mouse_holding = function () {
-		return self.mouse_helper.is_holding(0);
-	}
-	
-	self.is_key_pressed_once = function (key) {
-		return self.key_helper.is_pressed_once(key);
-	}
-	
-	self.is_key_released_once = function (key) {
-		return self.key_helper.is_released_once(key);
-	}
-	
-	self.is_key_holding = function (key) {
-		return self.key_helper.is_holding(key);
-	}
-	
-	self.is_any_mouse_pressed_once = function () {
-		return self.mouse_helper.is_any_pressed_once();
-	}
-	
-	self.is_any_mouse_released_once = function () {
-		return self.mouse_helper.is_any_released_once();
-	}
-	
-	self.is_any_mouse_holding = function () {
-		return self.mouse_helper.is_any_holding();
-	}
-	
-	self.is_any_key_pressed_once = function () {
-		return self.key_helper.is_any_pressed_once();
-	}
-	
-	self.is_any_key_released_once = function () {
-		return self.key_helper.is_any_released_once();
-	}
-	
-	self.is_any_key_holding = function () {
-		return self.key_helper.is_any_holding();
-	}
-	
-	game.input.onDown.add(self.mouse_pressed);
-	game.input.onUp.add(self.mouse_released);
-	game.input.keyboard.onDownCallback = self.key_pressed;
-	game.input.keyboard.onUpCallback = self.key_released;
-	
-	return self;
 
-}
-
-
-function Player(game) {
-	var self = game.add.sprite(0, 0, 'star');
+	function Player(game) {
+		var self = game.add.sprite(0, 0, 'player');
+		
+		self.anchor.set(0.5);
+		self.scale.set(0.4);
+		self.acceleration = 20;
+		self.friction = 0.93;
+		game.physics.arcade.enable(self);
+		
+		self.body.bounce.set(0.5);
+		
+		var acc = new Phaser.Point();
+		
+		function movement() {
+			acc.setTo(0.0, 0.0);
+			if (input_manager.is_key_holding(Phaser.KeyCode.UP)) {
+				acc.y -= 1.0;
+			}
+			if (input_manager.is_key_holding(Phaser.KeyCode.DOWN)) {
+				acc.y += 1.0;
+			}
+			if (input_manager.is_key_holding(Phaser.KeyCode.LEFT)) {
+				acc.x -= 1.0;
+			}
+			if (input_manager.is_key_holding(Phaser.KeyCode.RIGHT)) {
+				acc.x += 1.0;
+			}
+			
+			acc.setMagnitude(self.acceleration);
+			Phaser.Point.add(self.body.velocity, acc, self.body.velocity);
+			
+			self.body.velocity.multiply(self.friction, self.friction);
+		}
+		
+		function collide() {
+			game.physics.arcade.collide(self, layer_wall);
+		}
+		
+		function weaponry() {
+			if (input_manager.is_key_pressed_once(Phaser.KeyCode.Z)) {
+				Bullet(self.x, self.y);
+			}
+		}
+		
+		self.update = function () {
+			movement();
+			collide();
+			weaponry();
+		}
+		
+		return self;
+	}
 	
-	self.game = game;
-	self.anchor.setTo(0.5, 0.5);
-	game.physics.arcade.enable(self);
-	
-	return self;
-}
-
-
-function start_game() {
+	function Bullet(x, y) {
+		var self = bullet_pool.get_new();
+		
+		self.loadTexture('star');
+		self.x = x;
+		self.y = y;
+		self.anchor.set(0.5);
+		self.body.velocity.setTo(50, 0);
+		
+		self.life = 1.0;
+		
+		self.update = function () {
+			if (self.life <= 0) {
+				self.kill();
+				return;
+			}
+			
+			self.life -= game.time.physicsElapsed;
+		}
+		
+		return self;
+	}
 	
 	var game = new Phaser.Game(800, 600, Phaser.AUTO, 'game', { preload: preload, create: create, update: update});
 	
@@ -219,15 +330,19 @@ function start_game() {
 	
 	var player;
 	
+	var bullet_pool;
+	
 	var world_width       = 128;
 	var world_height      = 128;
 	var world_tile_width  = 32;
 	var world_tile_height = 32;
+	var bullet_pool_min_count = 50;
 	
 	var camera_lerp = 0.05;
 	
 	function preload() {
 		game.load.image('block', 'images/block.png');
+		game.load.image('player', 'images/player.png');
 		game.load.image('star', 'images/star.png');
 	}
 	
@@ -254,6 +369,10 @@ function start_game() {
 		layer.tint = tint;
 		return layer;
 	} 
+	
+	function enable_layer_collision(layer) {
+		tilemap.setCollisionByExclusion([], true, layer);
+	}
 	
 	function randomize_tile_layer(layer) {
 		for (var i = 0; i < world_width; ++i) {
@@ -288,12 +407,15 @@ function start_game() {
 		
 		randomize_tile_layer(layer_floor);
 		randomize_tile_layer(layer_wall);
+		enable_layer_collision(layer_wall);
 		
 		player = Player(game);
 		player.x = game.world.centerX;
 		player.y = game.world.centerY;
 		
 		camera_follow(player, true);
+		
+		bullet_pool = SpritePool(bullet_pool_min_count, Phaser.Physics.ARCADE);
 		
 	}
 	
@@ -305,31 +427,8 @@ function start_game() {
 		game.camera.lerp.setTo(camera_lerp, camera_lerp);
 	}
 	
-	function player_move() {
-		if (cursors.left.isDown)
-		{
-			player.body.position.x -= 4;
-		}
-		else if (cursors.right.isDown)
-		{
-			player.body.position.x += 4;
-		}
-
-		if (cursors.up.isDown)
-		{
-			player.body.position.y -= 4;
-		}
-		else if (cursors.down.isDown)
-		{
-			player.body.position.y += 4;
-		}
-	}
-	
 	function update() {
-		
 		input_manager.update();
-		
-		player_move();
 	}
 	
 }
