@@ -4,7 +4,7 @@
 		- projectile launch, trail, hit effect
 		- player hit, trail, death effect
 		- weapon ring animation
-		- navigation mesh
+		- navigation mesh, possibly need to modify map size
 		- enemies and progression
 		- music
 		- sound effect
