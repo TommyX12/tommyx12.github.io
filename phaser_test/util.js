@@ -30,6 +30,21 @@ function xy_to_angle(x, y) {
 	return Math.atan2(y, x);
 }
 
+function angle_delta(start, end, use_radians) {
+	if (use_radians === undefined) use_radians = true;
+	
+	var cap = use_radians ? Math.PI * 2 : 360;
+	var dif = (end - start) % cap;
+	if (dif != dif % (cap / 2)) {
+		dif = (dif < 0) ? dif + cap : dif - cap;
+	}
+	return dif;
+}
+
+function angular_lerp(a, b, x, use_radians) {
+	return a + angle_delta(a, b, use_radians) * x;
+}
+
 function deg(rad) {
 	return rad / Math.PI * 180;
 }

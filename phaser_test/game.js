@@ -1,30 +1,38 @@
 /*
 	TODO:
-		- mini map
-		- projectile launch, trail, hit effect
-		- player hit, trail, death effect
-		- weapon ring animation
-		- navigation mesh, possibly need to modify map size
-		- enemies and progression
-		- music
-		- sound effect
-		- user interface
-		- weapons: randomly spawned pick-up with limited ammo and slots for use, Z to fire, C to swap
-			- A - assault rifle - unlimited ammo
-			- S - shotgun
-			- I - sniper
-			- R - single rocket
-			// - A - rocket salvo
-			- D - dual missile
-			- L - missile salvo
-			- C - cluster missile - auto-target, ignore player target
-			- M - mine
-			- E - melee
+		// - projectile launch, trail, hit effect - 35
+		// - player hit, trail, death effect - 35
+		// - weapon ring animation - 20
+		// - path finding - 60
+		- enemies, objective, and progression - 30
+		- weapons randomly spawned pick-up with limited ammo and slots for use, Z to fire, C to swap - 30
+		- weapons:
+			- A - assault rifle - unlimited ammo - 15
+			- S - shotgun - 5
+			- I - sniper - 5
+			- R - single rocket - 5
+			- D - dual missile - 30
+			- L - missile salvo - 5
+			- C - cluster missile - auto-target, ignore player target - 5
+			- E - melee - 15
 		
-		- abilities: charged through kills, A,S,D to use
-			- stop time with tile wave
-			- create cover of cool shape
+		- abilities charged through kills, A,S,D to use - 15
+		- abilities:
+			- stop time with tile wave - 45
+		
+		- user interface - 30
+		- music - 15
+		- sound effect - 15
+	
+	LATER TODO:
+		- mini map
+		- weapons:
+			- M - mine
+		
+		- abilities:
 			- shock wave which also disables projectiles
+			- create cover of cool shape
+		
 */
 
 
@@ -275,9 +283,11 @@ function start_game() {
 		var self = agent_group.create(0, 0, texture_name);
 		
 		self.anchor.set(0.5);
-		self.scale.set(0.5);
-		self.acceleration = 35;
-		self.friction = 0.9;
+		self.scale.set(0.75);
+		self.friction = 0.1;
+		self.max_speed = 350;
+		self.angular_lerp = 0.35;
+		self.angle_dest = 0;
 		self.faction = faction;
 		game.physics.arcade.enable(self);
 		
@@ -285,8 +295,7 @@ function start_game() {
 		self.body.collideWorldBounds = true;
 		
 		self.target = null;
-		self.target_range = 400;
-		self.target_range_sq = self.target_range * self.target_range;
+		self.target_range = 500;
 		
 		self.launch_offset = 25.0;
 		
@@ -296,14 +305,14 @@ function start_game() {
 		
 		self.move = function(x, y) {
 			acc.setTo(x, y);
-			acc.setMagnitude(self.acceleration);
+			acc.setMagnitude(self.max_speed * self.friction);
 			Phaser.Point.add(self.body.velocity, acc, self.body.velocity);
 			
-			self.body.velocity.multiply(self.friction, self.friction);
+			self.body.velocity.multiply(1.0 - self.friction, 1.0 - self.friction);
 		}
 		
 		self.agent_in_range = function (agent) {
-			return dist_sq(agent.x, agent.y, self.x, self.y) < self.target_range_sq;
+			return dist_sq(agent.x, agent.y, self.x, self.y) < self.target_range * self.target_range;
 		}
 		
 		self.is_valid_target = function (agent) {
@@ -338,6 +347,18 @@ function start_game() {
 			}
 		}
 		
+		var rotate_threshold = self.max_speed * 0.5;
+		rotate_threshold *= rotate_threshold;
+		self.rotate_to_dest = function () {
+			if (self.target !== null) {
+				self.angle_dest = xy_to_angle(self.target.x - self.x, self.target.y - self.y);
+			}
+			else if (self.body.velocity.getMagnitudeSq() > rotate_threshold){
+				self.angle_dest = xy_to_angle(self.body.velocity.x, self.body.velocity.y);
+			}
+			self.angle = angular_lerp(self.angle, deg(self.angle_dest), self.angular_lerp, false);
+		}
+		
 		self.custom_update = function () {
 			
 		}
@@ -352,10 +373,11 @@ function start_game() {
 		}
 		
 		self.on_death = function () {
-			
+			emit_particle(self.x, self.y, 1, flash_emitter, 'explosion2');
 		}
 		
 		self.receive_damage = function (damage) {
+			emit_particle(self.x, self.y, 2, spark_emitter, 'particle2');
 			self.hp -= damage;
 			self.check_health();
 		}
@@ -368,8 +390,10 @@ function start_game() {
 		}
 		
 		self.update = function () {
-			self.custom_update();
+			if (!self.exists) return;
 			self.check_target();
+			self.rotate_to_dest();
+			self.custom_update();
 		}
 		
 		return self;
@@ -388,7 +412,7 @@ function start_game() {
 		self.crosshair.alpha = 0.0;
 		self.crosshair.scale.setTo(self.crosshair_scale_off);
 		
-		self.ability = Gun(self);
+		self.weapon = Gun(self);
 		
 		self.launch_offset = 25.0;
 		
@@ -413,9 +437,9 @@ function start_game() {
 			
 			self.move(x, y);
 			
-			self.ability.update();
+			self.weapon.update();
 			if (input_manager.is_key_holding(Phaser.KeyCode.Z)) {
-				self.ability.launch(self.x, self.y, self.target);
+				self.weapon.launch(self.x, self.y, self.target);
 			}
 			
 			if (self.target !== null) {
@@ -454,10 +478,103 @@ function start_game() {
 		self.x = pos[0];
 		self.y = pos[1];
 		
+		self.max_speed = 200;
+		
+		self.state = 'idle'; // idle, pursue, combat
+		
+		self.path_finding_dest_x = 0;
+		self.path_finding_dest_y = 0;
+		self.path_found = null;
+		self.path_follow_index = 0;
+		self.dest_radius = 32;
+		self.finding_path = false;
+		self.move_towards = function (x, y) {
+			if (!self.arrived_at(x, y)) {
+				self.move(x - self.x, y - self.y);
+				return false;
+			}
+			return true;
+		}
+		
+		self.arrived_at = function (x, y) {
+			return dist_sq(x, y, self.x, self.y) < self.dest_radius * self.dest_radius;
+		}
+		
+		self.clear_path = function () {
+			self.path_found = null;
+		}
+		
+		self.path_find_towards = function (x, y) {
+			if (!self.finding_path) {
+				if (self.path_found === null) {
+					path_finder.findPath(
+						layer_floor.getTileY(self.y),
+						layer_floor.getTileX(self.x),
+						layer_floor.getTileY(y),
+						layer_floor.getTileX(x),
+						function (path) {
+							self.path_found = path;
+							self.finding_path = false;
+							self.path_follow_index = 0;
+						}
+					)
+					self.finding_path = true;
+				}
+				else {
+					if (self.path_follow_index < self.path_found.length) {
+						var path_point = self.path_found[self.path_follow_index];
+						var dest_x = tile_to_x(path_point.y, world_tile_width);
+						var dest_y = tile_to_y(path_point.x, world_tile_height);
+						if (self.move_towards(dest_x, dest_y)) {
+							self.path_follow_index++;
+						}
+					}
+					else {
+						self.clear_path();
+					}
+				}
+			}
+		}
+		
+		self.custom_update = function () {
+			// self.move(x, y);
+			
+			// self.weapon.update();
+			// self.weapon.launch(self.x, self.y, self.target);
+			
+			if (self.state == 'idle') {
+				if (self.target !== null) {
+					self.state = 'pursue';
+				}
+				else {
+					self.clear_path();
+				}
+			}
+			
+			if (self.state == 'pursue') {
+				if (self.target !== null) {
+					// if has direct line of sight and is in weapon range, enter combat state, otherwise move to target with path finder
+					self.path_find_towards(self.target.x, self.target.y);
+				}
+				else {
+					self.state = 'idle';
+				}
+			}
+			else if (self.state == 'combat') {
+				if (self.target !== null) {
+					self.clear_path();
+					// if has direct line of sight and is in weapon range, strafe, otherwise enter pursue state
+				}
+				else {
+					self.state = 'idle';
+				}
+			}
+		}
+		
 		return self;
 	}
 	
-	function Ability(host) {
+	function Weapon(host) {
 		var self = new Object();
 		
 		self.host = host;
@@ -494,7 +611,7 @@ function start_game() {
 	}
 	
 	function Gun(host) {
-		var self = Ability(host);
+		var self = Weapon(host);
 		
 		self.total_charge = 0.1;
 		self.bullet_speed = 1800;
@@ -543,6 +660,8 @@ function start_game() {
 		self.damage = damage;
 		self.faction = faction;
 		
+		emit_particle(self.x, self.y, 1, flash_emitter, 'particle');
+		
 		self.on_agent_collision = function (bullet, agent) {
 			if (agent.faction !== self.faction) {
 				agent.receive_damage(self.damage);
@@ -555,7 +674,7 @@ function start_game() {
 		}
 		
 		self.on_kill = function () {
-			
+			emit_particle(self.x, self.y, 4, spark_emitter, 'particle');
 		}
 		
 		self.custom_kill = function () {
@@ -564,16 +683,20 @@ function start_game() {
 		}
 		
 		self.update = function () {
+			if (!self.exists) return;
+			
 			if (self.life <= 0) {
 				self.kill();
 				return;
 			}
 			
-			game.physics.arcade.overlap(self, agent_group, self.on_agent_collision);
 			// var tile = game.physics.arcade.collide(self, layer_wall) || get_tile(self.x, self.y, layer_wall);
 			var tile = get_tile(self.x, self.y, layer_wall);
 			if (tile) {
 				self.on_wall_collision();
+			}
+			else {
+				game.physics.arcade.overlap(self, agent_group, self.on_agent_collision);
 			}
 			
 			self.alpha = self.life / self.total_life;
@@ -602,11 +725,31 @@ function start_game() {
 	
 	var bullet_pool;
 	
-	var world_width       = 128;
-	var world_height      = 128;
-	var world_tile_width  = 64;
-	var world_tile_height = 64;
-	var bullet_pool_min_count = 50;
+	var spark_emitter;
+	var flash_emitter;
+	var explosion_emitter;
+	
+	var path_finder = new EasyStar.js();
+	
+	var world_width            = 128;
+	var world_height           = 128;
+	var world_tile_width       = 64;
+	var world_tile_height      = 64;
+	var bullet_pool_min_count  = 50;
+	var max_particles          = 200;
+	var spark_lifespan         = 200;
+	var spark_scale            = 0.75;
+	var spark_speed            = 750;
+	var spark_drag             = 5000;
+	var flash_lifespan         = 100;
+	var flash_scale            = 2.0;
+	var flash_speed            = 0;
+	var flash_drag             = 0;
+	var explosion_lifespan     = 250;
+	var explosion_scale        = 3.0;
+	var explosion_speed        = 0;
+	var explosion_drag         = 0;
+	var path_finder_iterations = 10;
 	
 	var camera_lerp = 0.05;
 	
@@ -616,6 +759,10 @@ function start_game() {
 		game.load.image('star', 'images/star.png');
 		game.load.image('crosshair', 'images/crosshair.png');
 		game.load.image('bullet', 'images/bullet.png');
+		game.load.image('particle', 'images/particle.png');
+		game.load.image('particle2', 'images/particle2.png');
+		game.load.image('explosion', 'images/explosion.png');
+		game.load.image('explosion2', 'images/explosion2.png');
 	}
 	
 	/* function create_tile_layer(name, width, height, tile_width, tile_height, depth, tint) {
@@ -636,6 +783,27 @@ function start_game() {
 		return layer;
 	} */
 	
+	
+	function emit_particle(x, y, num, emitter, texture) {
+		for (var i = 0; i < num; ++i) {
+			emitter.emitParticle(x, y, texture);
+		}
+	}
+	
+	function make_emitter(lifespan, scale, speed, drag) {
+		var emitter = game.add.emitter(0, 0, max_particles);
+		emitter.makeParticles('particle');
+		emitter.setRotation(0, 0);
+		emitter.setAlpha(1.0, 0.0, lifespan, Phaser.Easing.Sinusoidal.In);
+		emitter.setScale(scale, scale / 2, scale, scale / 2, lifespan);
+		emitter.setXSpeed(-speed, speed);
+		emitter.setYSpeed(-speed, speed);
+		emitter.particleDrag.setTo(drag, drag);
+		emitter.lifespan = lifespan;
+		
+		return emitter;
+	}
+
 	function create_tile_layer(name, width, height, tile_width, tile_height, tint) {
 		var layer = tilemap.createBlankLayer(name, width, height, tile_width, tile_height);
 		layer.tint = tint;
@@ -823,6 +991,9 @@ function start_game() {
 		layer_wall = create_tile_layer('layer_wall', world_width, world_height, world_tile_width, world_tile_height, 0x3388ff);
 		
 		map_data = generate_map();
+		path_finder.setGrid(map_data);
+		path_finder.setAcceptableTiles([1]);
+		path_finder.setIterationsPerCalculation(path_finder_iterations);
 		
 		agent_group = game.add.group();
 		
@@ -853,6 +1024,12 @@ function start_game() {
 		
 		bullet_pool = SpritePool(bullet_pool_min_count, Phaser.Physics.ARCADE);
 		
+		spark_emitter = make_emitter(spark_lifespan, spark_scale, spark_speed, spark_drag);
+
+		flash_emitter = make_emitter(flash_lifespan, flash_scale, flash_speed, flash_drag);
+		
+		explosion_emitter = make_emitter(explosion_lifespan, explosion_scale, explosion_speed, explosion_drag);
+		explosion_emitter.setScale(explosion_scale / 2, explosion_scale, explosion_scale / 2, explosion_scale, explosion_lifespan);
 	}
 	
 	function camera_follow(target, teleport) {
@@ -871,6 +1048,7 @@ function start_game() {
 	function update() {
 		input_manager.update();
 		agent_collision();
+		path_finder.calculate();
 	}
 	
 }
