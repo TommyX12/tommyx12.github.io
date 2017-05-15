@@ -4,7 +4,7 @@
 		// - player hit, trail, death effect - 35
 		// - weapon ring animation - 20
 		// - path finding - 60
-		- enemies, objective, and progression - 30
+		// - enemies, objective, and progression - 45
 		- weapons randomly spawned pick-up with limited ammo and slots for use, Z to fire, C to swap - 30
 		- weapons:
 			- A - assault rifle - unlimited ammo - 15
@@ -20,6 +20,8 @@
 		- abilities:
 			- stop time with tile wave - 45
 		
+		- more progression and balancing - 40
+		
 		- user interface - 30
 		- music - 15
 		- sound effect - 15
@@ -32,6 +34,8 @@
 		- abilities:
 			- shock wave which also disables projectiles
 			- create cover of cool shape
+		
+		- diep.io stats level up system
 		
 */
 
@@ -307,16 +311,14 @@ function start_game() {
 			acc.setTo(x, y);
 			acc.setMagnitude(self.max_speed * self.friction);
 			Phaser.Point.add(self.body.velocity, acc, self.body.velocity);
-			
-			self.body.velocity.multiply(1.0 - self.friction, 1.0 - self.friction);
 		}
 		
-		self.agent_in_range = function (agent) {
-			return dist_sq(agent.x, agent.y, self.x, self.y) < self.target_range * self.target_range;
+		self.agent_in_range = function (agent, range) {
+			return dist_sq(agent.x, agent.y, self.x, self.y) < range * range;
 		}
 		
 		self.is_valid_target = function (agent) {
-			return agent.exists && agent.faction != self.faction && self.agent_in_range(agent);
+			return agent.exists && agent.faction != self.faction && self.agent_in_range(agent, self.target_range);
 		}
 		
 		self.cycle_target = function () {
@@ -373,7 +375,7 @@ function start_game() {
 		}
 		
 		self.on_death = function () {
-			emit_particle(self.x, self.y, 1, flash_emitter, 'explosion2');
+			
 		}
 		
 		self.receive_damage = function (damage) {
@@ -384,6 +386,13 @@ function start_game() {
 		
 		self.check_health = function () {
 			if (self.hp <= 0) {
+				if (game.camera.target === self) {
+					game.camera.unfollow();
+				}
+				emit_particle(self.x, self.y, 1, flash_emitter, 'explosion2');
+				if (self.faction === 'enemy') {
+					enemies_left--;
+				}
 				self.on_death();
 				self.destroy();
 			}
@@ -394,6 +403,8 @@ function start_game() {
 			self.check_target();
 			self.rotate_to_dest();
 			self.custom_update();
+			
+			self.body.velocity.multiply(1.0 - self.friction, 1.0 - self.friction);
 		}
 		
 		return self;
@@ -470,6 +481,7 @@ function start_game() {
 		return self;
 	}
 	
+	Enemy.threat = 1.0;
 	function Enemy() {
 		var self = Agent('player', 'enemy');
 		
@@ -479,14 +491,19 @@ function start_game() {
 		self.y = pos[1];
 		
 		self.max_speed = 200;
+		self.target_range = 400;
 		
-		self.state = 'idle'; // idle, pursue, combat
+		self.state = 'idle'; // idle, combat
+		
+		self.weapon = Gun(self);
+		self.weapon.total_charge = 2.0;
 		
 		self.path_finding_dest_x = 0;
 		self.path_finding_dest_y = 0;
 		self.path_found = null;
 		self.path_follow_index = 0;
 		self.dest_radius = 32;
+		self.random_tile_radius = 3;
 		self.finding_path = false;
 		self.move_towards = function (x, y) {
 			if (!self.arrived_at(x, y)) {
@@ -507,11 +524,14 @@ function start_game() {
 		self.path_find_towards = function (x, y) {
 			if (!self.finding_path) {
 				if (self.path_found === null) {
+					var tile_center_x = layer_floor.getTileX(x);
+					var tile_center_y = layer_floor.getTileY(y);
+					var random_floor = get_random_floor(map_data, world_width, world_height, tile_center_x, tile_center_y, self.random_tile_radius);
 					path_finder.findPath(
 						layer_floor.getTileY(self.y),
 						layer_floor.getTileX(self.x),
-						layer_floor.getTileY(y),
-						layer_floor.getTileX(x),
+						random_floor[1],
+						random_floor[0],
 						function (path) {
 							self.path_found = path;
 							self.finding_path = false;
@@ -539,33 +559,26 @@ function start_game() {
 		self.custom_update = function () {
 			// self.move(x, y);
 			
-			// self.weapon.update();
+			self.weapon.update();
 			// self.weapon.launch(self.x, self.y, self.target);
 			
 			if (self.state == 'idle') {
 				if (self.target !== null) {
-					self.state = 'pursue';
+					self.clear_path();
+					self.state = 'combat';
 				}
 				else {
-					self.clear_path();
+					self.path_find_towards(self.x, self.y);
 				}
 			}
 			
-			if (self.state == 'pursue') {
+			if (self.state == 'combat') {
 				if (self.target !== null) {
-					// if has direct line of sight and is in weapon range, enter combat state, otherwise move to target with path finder
 					self.path_find_towards(self.target.x, self.target.y);
+					self.weapon.launch(self.x, self.y, self.target);
 				}
 				else {
-					self.state = 'idle';
-				}
-			}
-			else if (self.state == 'combat') {
-				if (self.target !== null) {
 					self.clear_path();
-					// if has direct line of sight and is in weapon range, strafe, otherwise enter pursue state
-				}
-				else {
 					self.state = 'idle';
 				}
 			}
@@ -729,6 +742,9 @@ function start_game() {
 	var flash_emitter;
 	var explosion_emitter;
 	
+	var current_wave;
+	var enemies_left;
+	
 	var path_finder = new EasyStar.js();
 	
 	var world_width            = 128;
@@ -750,6 +766,7 @@ function start_game() {
 	var explosion_speed        = 0;
 	var explosion_drag         = 0;
 	var path_finder_iterations = 10;
+	var random_walk_steps      = 2048;
 	
 	var camera_lerp = 0.05;
 	
@@ -924,7 +941,7 @@ function start_game() {
 		// randomize_tile_layer(layer_wall);
 		var start_x = random_int(world_width);
 		var start_y = random_int(world_height);
-		var map_data = random_walk(world_width, world_height, 2048, start_x, start_y);
+		var map_data = random_walk(world_width, world_height, random_walk_steps, start_x, start_y);
 		for (var i = 0; i < world_width; ++i) {
 			for (var j = 0; j < world_height; ++j) {
 				if (map_data[i][j] > 0) {
@@ -940,28 +957,78 @@ function start_game() {
 		return map_data;
 	}
 	
+	var enemy_list = [
+		Enemy,
+	]
+
+	function spawn_wave(wave) {
+		enemies_left = 0;
+		var total_threat = 5.0 + (wave - 1) * 1.0;
+		while (total_threat > 0) {
+			var valid_enemies = []
+			for (var i = 0; i < enemy_list.length; ++i) {
+				var enemy = enemy_list[i];
+				if (enemy.threat <= total_threat) {
+					valid_enemies.push(enemy);
+				}
+			}
+			
+			var selected_enemy = random_select_array(valid_enemies);
+			total_threat -= selected_enemy.threat;
+			selected_enemy();
+			
+			enemies_left++;
+		}
+	}
+	
 	function tile_to_x(tile_x, tile_width) {
 		return tile_x * tile_width + (tile_width / 2);
 	}
 	function tile_to_y(tile_y, tile_height) {
 		return tile_y * tile_height + (tile_height / 2);
 	}
-	function get_random_floor_pos(map_data, width, height, tile_width, tile_height) {
+	function get_random_floor_pos(map_data, width, height, tile_width, tile_height, bound_center_x, bound_center_y, bound_radius) {
+		var random_floor = get_random_floor(map_data, width, height, bound_center_x, bound_center_y, bound_radius);
+		if (random_floor !== null) {
+			return [tile_to_x(random_floor[0], tile_width), tile_to_y(random_floor[1], tile_height)];
+		}
+		
+		return null;
+	}
+
+	function get_random_floor(map_data, width, height, bound_center_x, bound_center_y, bound_radius) {
 		var count = 0;
-		for (var i = 0; i < width; ++i) {
-			for (var j = 0; j < height; ++j) {
+		var bound_min_x;
+		var bound_min_y;
+		var bound_max_x;
+		var bound_max_y;
+		if (bound_center_x !== undefined) {
+			bound_min_x = clamp(bound_center_x - bound_radius, 0, width - 1);
+			bound_min_y = clamp(bound_center_y - bound_radius, 0, height - 1);
+			bound_max_x = clamp(bound_center_x + bound_radius, 0, width - 1);
+			bound_max_y = clamp(bound_center_y + bound_radius, 0, height - 1);
+		}
+		else {
+			bound_min_x = 0;
+			bound_min_y = 0;
+			bound_max_x = width - 1;
+			bound_max_y = height - 1;
+		}
+		for (var i = bound_min_x; i <= bound_max_x; ++i) {
+			for (var j = bound_min_y; j <= bound_max_y; ++j) {
 				if (map_data[i][j] == 1) {
 					count++;
 				}
 			}
 		}
+		if (count === 0) return null;
 		var selection = random_int(count);
 		count = 0;
-		for (var i = 0; i < width; ++i) {
-			for (var j = 0; j < height; ++j) {
+		for (var i = bound_min_x; i <= bound_max_x; ++i) {
+			for (var j = bound_min_y; j <= bound_max_y; ++j) {
 				if (map_data[i][j] == 1) {
 					if (count === selection) {
-						return [tile_to_x(i, tile_width), tile_to_y(j, tile_height)];
+						return [i, j];
 					}
 					count++;
 				}
@@ -970,7 +1037,6 @@ function start_game() {
 	}
 
 	function create() {
-		
 		input_manager = InputManager(game);
 
 		game.stage.backgroundColor = '#dddddd';
@@ -1002,24 +1068,6 @@ function start_game() {
 		player.x = starting_tile_pos[0];
 		player.y = starting_tile_pos[1];
 		
-		Enemy();
-		Enemy();
-		Enemy();
-		Enemy();
-		Enemy();
-		Enemy();
-		Enemy();
-		Enemy();
-		Enemy();
-		Enemy();
-		Enemy();
-		Enemy();
-		Enemy();
-		Enemy();
-		Enemy();
-		Enemy();
-		Enemy();
-		
 		camera_follow(player, true);
 		
 		bullet_pool = SpritePool(bullet_pool_min_count, Phaser.Physics.ARCADE);
@@ -1030,6 +1078,9 @@ function start_game() {
 		
 		explosion_emitter = make_emitter(explosion_lifespan, explosion_scale, explosion_speed, explosion_drag);
 		explosion_emitter.setScale(explosion_scale / 2, explosion_scale, explosion_scale / 2, explosion_scale, explosion_lifespan);
+		
+		current_wave = 1;
+		spawn_wave(current_wave);
 	}
 	
 	function camera_follow(target, teleport) {
@@ -1045,10 +1096,18 @@ function start_game() {
 		game.physics.arcade.collide(agent_group);
 	}
 	
+	function wave_check() {
+		if (enemies_left <= 0) {
+			current_wave++;
+			spawn_wave(current_wave);
+		}
+	}
+	
 	function update() {
 		input_manager.update();
 		agent_collision();
 		path_finder.calculate();
+		wave_check();
 	}
 	
 }
