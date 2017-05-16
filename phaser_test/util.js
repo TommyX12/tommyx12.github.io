@@ -26,6 +26,20 @@ function angle_to_point(point, angle, magnitude) {
 	point.y = Math.sin(angle) * magnitude;
 }
 
+function bezier_quadratic(t, p0, p1, p2, out) {
+	if (out === undefined) out = {x:0, y:0};
+	out.x = (1 - t) * (1 - t) * p0.x + 2 * (1 - t) * t * p1.x + t * t * p2.x;
+	out.y = (1 - t) * (1 - t) * p0.y + 2 * (1 - t) * t * p1.y + t * t * p2.y;
+	return out;
+}
+
+function bezier_cubic(t, p0, p1, p2, p3, out) {
+	if (out === undefined) out = {x:0, y:0};
+	out.x = (1-t)*(1-t)*(1-t)*p0.x + 3*(1-t)*(1-t)*t*p1.x + 3*(1-t)*t*t*p2.x + t*t*t*p3.x;
+	out.y = (1-t)*(1-t)*(1-t)*p0.y + 3*(1-t)*(1-t)*t*p1.y + 3*(1-t)*t*t*p2.y + t*t*t*p3.y;
+	return out;
+}
+
 function xy_to_angle(x, y) {
 	return Math.atan2(y, x);
 }
