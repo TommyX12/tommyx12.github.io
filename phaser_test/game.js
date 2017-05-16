@@ -14,7 +14,7 @@
 			- D - dual missile - 30
 			- L - missile salvo - 5
 			- C - cluster missile - auto-target, ignore player target - 5
-			- E - melee - 15
+			- E - electric shock - melee - 15
 		
 		- abilities charged through kills, A,S,D to use - 15
 		- abilities:
@@ -587,79 +587,14 @@ function start_game() {
 		return self;
 	}
 	
-	function Weapon(host) {
-		var self = new Object();
-		
-		self.host = host;
-		self.allow_blind_fire = false;
-		self.charge = 0.0;
-		self.total_charge = 1.0;
-		self.get_charge = function () {
-			return clamp(charge / total_charge, 0.0, 1.0);
-		}
-		self.update = function () {
-			if (self.charge < self.total_charge) {
-				self.charge += game.time.physicsElapsed;
-			}
-			self.on_update();
-		}
-		self.launch = function (x, y, target) {
-			if (target !== null || self.allow_blind_fire) {
-				while (self.charge >= self.total_charge) {
-					self.on_launch(x, y, target);
-					self.charge -= self.total_charge;
-				}
-			}
-		}
-		
-		self.on_update = function () {
-			
-		}
-		
-		self.on_launch = function (x, y, target) {
-			
-		}
-		
-		return self;
-	}
-	
-	function Gun(host) {
-		var self = Weapon(host);
-		
-		self.total_charge = 0.1;
-		self.bullet_speed = 1800;
-		self.bullet_spread = 5;
-		self.bullet_life = 0.5;
-		self.bullet_size = 0.6;
-		self.bullet_damage = 10;
-		self.pellets = 1;
-		
-		var temp_point = new Phaser.Point(0, 0);
-		self.on_launch = function (x, y, target) {
-			var angle = xy_to_angle(target.x - x, target.y - y);
-			angle_to_point(temp_point, angle, host.launch_offset);
-			for (var i = 0; i < self.pellets; ++i) {
-				var spread = rad(random_range(-self.bullet_spread, self.bullet_spread));
-				var bullet = Bullet(
-					x + temp_point.x,
-					y + temp_point.y,
-					angle + spread,
-					self.bullet_speed,
-					self.bullet_life,
-					self.bullet_damage,
-					host.faction
-				);
-				bullet.scale.set(self.bullet_size);
-			}
-		}
-		
-		return self;
-	}
-	
-	function Bullet(x, y, angle, speed, life, damage, faction) {
+	var enemy_list = [
+		Enemy,
+	]
+
+	function Bullet(x, y, texture, angle, speed, life, damage, faction) {
 		var self = bullet_pool.get_new();
 		
-		self.loadTexture('bullet');
+		self.loadTexture(texture);
 		self.x = x;
 		self.y = y;
 		self.anchor.set(0.5);
@@ -718,6 +653,148 @@ function start_game() {
 		
 		return self;
 	}
+	
+	function Weapon(host) {
+		var self = new Object();
+		
+		self.host = host;
+		self.allow_blind_fire = false;
+		self.charge = 0.0;
+		self.total_charge = 1.0;
+		self.get_charge = function () {
+			return clamp(charge / total_charge, 0.0, 1.0);
+		}
+		self.update = function () {
+			if (self.charge < self.total_charge) {
+				self.charge += game.time.physicsElapsed;
+			}
+			self.on_update();
+		}
+		self.launch = function (x, y, target) {
+			if (target !== null || self.allow_blind_fire) {
+				while (self.charge >= self.total_charge) {
+					self.on_launch(x, y, target);
+					self.charge -= self.total_charge;
+				}
+			}
+		}
+		
+		self.on_update = function () {
+			
+		}
+		
+		self.on_launch = function (x, y, target) {
+			
+		}
+		
+		return self;
+	}
+	
+	function Gun(host) {
+		var self = Weapon(host);
+		
+		self.total_charge = 0.1;
+		self.bullet_speed = 1800;
+		self.bullet_texture = 'bullet';
+		self.bullet_spread = 5;
+		self.bullet_life = 0.5;
+		self.bullet_size = 0.6;
+		self.bullet_damage = 10;
+		self.pellets = 1;
+		
+		var temp_point = new Phaser.Point(0, 0);
+		self.on_launch = function (x, y, target) {
+			var angle = xy_to_angle(target.x - x, target.y - y);
+			angle_to_point(temp_point, angle, host.launch_offset);
+			for (var i = 0; i < self.pellets; ++i) {
+				var spread = rad(random_range(-self.bullet_spread, self.bullet_spread));
+				var bullet = Bullet(
+					x + temp_point.x,
+					y + temp_point.y,
+					self.bullet_texture,
+					angle + spread,
+					self.bullet_speed,
+					self.bullet_life,
+					self.bullet_damage,
+					host.faction
+				);
+				bullet.scale.set(self.bullet_size);
+			}
+		}
+		
+		return self;
+	}
+	
+	AssaultRifle.icon = 'assault_rifle_icon';
+	AssaultRifle.pickup_ammo = 0;
+	function AssaultRifle(host) {
+		var self = Gun(host);
+		
+		self.total_charge = 0.1;
+		self.bullet_speed = 1800;
+		self.bullet_spread = 5;
+		self.bullet_texture = 'bullet';
+		self.bullet_life = 0.5;
+		self.bullet_size = 0.6;
+		self.bullet_damage = 10;
+		self.pellets = 1;
+		
+		return self;
+	}
+	
+	Shotgun.icon = 'shotgun_icon';
+	Shotgun.pickup_ammo = 0;
+	function Shotgun(host) {
+		var self = Gun(host);
+		
+		self.total_charge = 0.1;
+		self.bullet_speed = 1800;
+		self.bullet_spread = 5;
+		self.bullet_texture = 'bullet';
+		self.bullet_life = 0.5;
+		self.bullet_size = 0.6;
+		self.bullet_damage = 10;
+		self.pellets = 1;
+		
+		return self;
+	}
+	
+	Shotgun.icon = 'shotgun_icon';
+	Shotgun.pickup_ammo = 0;
+	function Sniper(host) {
+	
+	}
+	
+	function RocketLauncher(host) {
+	
+	}
+	
+	function DualMissile(host) {
+	
+	}
+	
+	function MissileSalvo(host) {
+	
+	}
+	
+	function ClusterMissile(host) {
+	
+	}
+	
+	function ElectricShock(host) {
+	
+	}
+	
+	var weapon_list = [
+		AssaultRifle,
+		Shotgun,
+		Sniper,
+		RocketLauncher,
+		DualMissile,
+		MissileSalvo,
+		ClusterMissile,
+		ElectricShock,
+	]
 	
 	var game = new Phaser.Game(1024, 768, Phaser.AUTO, 'game', { preload: preload, create: create, update: update});
 	
@@ -957,10 +1034,6 @@ function start_game() {
 		return map_data;
 	}
 	
-	var enemy_list = [
-		Enemy,
-	]
-
 	function spawn_wave(wave) {
 		enemies_left = 0;
 		var total_threat = 5.0 + (wave - 1) * 1.0;
