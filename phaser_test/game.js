@@ -13,7 +13,6 @@
 			- D - dual missile - 30
 			- L - missile salvo - 5
 			- C - cluster missile - auto-target, ignore player target - 5
-			- E - electric shock - melee - 15
 		
 		- abilities charged through kills, A,S,D to use - 15
 		- abilities:
@@ -21,14 +20,16 @@
 		
 		- more progression and balancing - 40
 		
-		- user interface - 30
+		- basic user interface - 30
 		- music - 15
 		- sound effect - 15
 	
 	LATER TODO:
 		- mini map
+		- more interesting map with more tile type and more stuff
 		- bullet exert force on host and receiver
 		- weapons:
+			- E - electric shock - melee - 15
 			- R - single rocket - 5
 			- M - mine
 		
@@ -37,6 +38,9 @@
 			- create cover of cool shape
 		
 		- diep.io stats level up system
+		- user interface - 30
+			- show weapon recharge etc
+			
 		
 */
 
@@ -309,6 +313,8 @@ function start_game() {
 		self.current_weapon = 0;
 		
 		self.hp = 100;
+		self.max_hp = self.hp;
+		self.hp_regen = 5;
 		
 		var acc = new Phaser.Point();
 		
@@ -323,7 +329,7 @@ function start_game() {
 		}
 		
 		self.is_valid_target = function (agent) {
-			return agent.exists && agent.faction != self.faction && self.agent_in_range(agent, self.target_range);
+			return agent.exists && agent.faction !== self.faction && self.agent_in_range(agent, self.target_range);
 		}
 		
 		self.cycle_target = function () {
@@ -400,7 +406,13 @@ function start_game() {
 				}
 				self.on_death();
 				self.destroy();
+				
+				self.hp = 0.0;
 			}
+		}
+		
+		self.health_update = function () {
+			self.hp = clamp(self.hp + self.hp_regen * game.time.physicsElapsed, 0.0, self.max_hp);
 		}
 		
 		self.cycle_weapon = function () {
@@ -459,6 +471,7 @@ function start_game() {
 			self.check_target();
 			self.rotate_to_dest();
 			self.check_weapons();
+			self.health_update();
 			self.custom_update();
 			
 			self.body.velocity.multiply(1.0 - self.friction, 1.0 - self.friction);
@@ -474,7 +487,7 @@ function start_game() {
 		self.crosshair_scale_on = 1.0;
 		self.crosshair_scale_off = 2.0;
 		
-		self.crosshair = game.add.sprite(0, 0, 'crosshair');
+		self.crosshair = player_ui_group.create(0, 0, 'crosshair');
 		self.crosshair.tint = 0xff4400;
 		self.crosshair.anchor.setTo(0.5);
 		self.crosshair.alpha = 0.0;
@@ -513,11 +526,11 @@ function start_game() {
 			}
 			
 			if (input_manager.is_key_pressed_once(Phaser.KeyCode.X)) {
-				self.cycle_weapon();
+				self.cycle_target();
 			}
 			
 			if (input_manager.is_key_pressed_once(Phaser.KeyCode.C)) {
-				self.cycle_target();
+				self.cycle_weapon();
 			}
 			
 			self.move(x, y);
@@ -552,7 +565,6 @@ function start_game() {
 		return self;
 	}
 	
-	Enemy.threat = 1.0;
 	function Enemy() {
 		var self = Agent('player', 'enemy');
 		
@@ -657,8 +669,145 @@ function start_game() {
 		return self;
 	}
 	
+	Enemy_AssaultRifle.threat = 1.0;
+	function Enemy_AssaultRifle(hp_mul) {
+		var self = Enemy();
+		
+		self.hp = self.max_hp = 100 * hp_mul;
+		
+		self.tint = 0xff4422;
+		
+		var weapon = AssaultRifle(self);
+		weapon.charge = 0.0;
+		weapon.total_charge *= 5;
+		weapon.bullet_speed *= 0.15;
+		weapon.bullet_spread *= 2;
+		weapon.bullet_texture += '2';
+		weapon.bullet_life *= 4;
+		weapon.bullet_damage *= 0.75;
+		
+		self.weapons = [weapon];
+		
+		return self;
+	}
+	
+	Enemy_Shotgun.threat = 4.0;
+	function Enemy_Shotgun(hp_mul) {
+		var self = Enemy();
+		
+		self.hp = self.max_hp = 200 * hp_mul;
+		
+		self.tint = Shotgun.icon_color;
+		
+		var weapon = Shotgun(self);
+		weapon.charge = 0.0;
+		weapon.total_charge *= 3;
+		weapon.bullet_speed *= 0.2;
+		weapon.bullet_spread *= 2;
+		weapon.bullet_texture += '2';
+		weapon.bullet_life *= 4;
+		weapon.bullet_damage *= 0.5;
+		
+		self.weapons = [weapon];
+		
+		return self;
+	}
+	
+	Enemy_Sniper.threat = 3.0;
+	function Enemy_Sniper(hp_mul) {
+		var self = Enemy();
+		
+		self.hp = self.max_hp = 200 * hp_mul;
+		
+		self.tint = Sniper.icon_color;
+		
+		var weapon = Sniper(self);
+		weapon.charge = 0.0;
+		weapon.total_charge *= 3;
+		weapon.bullet_speed *= 0.2;
+		weapon.bullet_spread *= 2;
+		weapon.bullet_texture += '2';
+		weapon.bullet_life *= 4;
+		weapon.bullet_damage *= 0.35;
+		
+		self.weapons = [weapon];
+		
+		return self;
+	}
+	
+	Enemy_DualMissile.threat = 2.5;
+	function Enemy_DualMissile(hp_mul) {
+		var self = Enemy();
+		
+		self.hp = self.max_hp = 250 * hp_mul;
+		
+		self.tint = DualMissile.icon_color;
+		
+		var weapon = DualMissile(self);
+		weapon.charge = 0.0;
+		weapon.total_charge *= 2;
+		weapon.missile_texture += '2';
+		weapon.missile_life *= 1.75;
+		weapon.missile_damage *= 0.5;
+		weapon.missile_update_target = false;
+		weapon.missile_traile_texture += '2';
+		
+		self.weapons = [weapon];
+		
+		return self;
+	}
+	
+	Enemy_MissileSalvo.threat = 3.0;
+	function Enemy_MissileSalvo(hp_mul) {
+		var self = Enemy();
+		
+		self.hp = self.max_hp = 300 * hp_mul;
+		
+		self.tint = MissileSalvo.icon_color;
+		
+		var weapon = MissileSalvo(self);
+		weapon.charge = 0.0;
+		weapon.total_charge *= 2;
+		weapon.missile_texture += '2';
+		weapon.missile_life *= 2.5;
+		weapon.missile_damage *= 0.5;
+		weapon.missile_update_target = false;
+		weapon.missile_traile_texture += '2';
+		
+		self.weapons = [weapon];
+		
+		return self;
+	}
+	
+	Enemy_ClusterMissile.threat = 5.0;
+	function Enemy_ClusterMissile(hp_mul) {
+		var self = Enemy();
+		
+		self.hp = self.max_hp = 500 * hp_mul;
+		
+		self.tint = ClusterMissile.icon_color;
+		
+		var weapon = ClusterMissile(self);
+		weapon.charge = 0.0;
+		weapon.total_charge *= 2;
+		weapon.missile_texture += '2';
+		weapon.missile_life *= 1.5;
+		weapon.missile_damage *= 0.5;
+		weapon.missile_update_target = false;
+		weapon.missile_traile_texture += '2';
+		
+		self.weapons = [weapon];
+		
+		return self;
+	}
+	
 	var enemy_list = [
-		Enemy,
+		Enemy_AssaultRifle,
+		Enemy_Shotgun,
+		Enemy_Sniper,
+		Enemy_DualMissile,
+		Enemy_MissileSalvo,
+		Enemy_ClusterMissile,
 	]
 	
 	function Trail(x1, y1, x2, y2, size, texture, life) {
@@ -739,6 +888,10 @@ function start_game() {
 			self.kill();
 		}
 		
+		self.on_life_end = function () {
+			
+		}
+		
 		self.guidance = function () {
 			if (self.total_life > 0) {
 				self.alpha = self.life / self.total_life;
@@ -749,7 +902,8 @@ function start_game() {
 			if (!self.exists) return;
 			
 			if (self.total_life > 0 && self.life <= 0) {
-				self.custom_kill();
+				self.on_life_end();
+				self.kill();
 				return;
 			}
 			
@@ -772,8 +926,8 @@ function start_game() {
 		return self;
 	}
 	
-	function Missile(x, y, texture, target, angle, speed, life, damage, faction) {
-		var self = Bullet(x, y, texture, angle, 0, life, damage, faction);
+	function Missile(x, y, texture, target, pivot_spread, pivot_lerp, trail_size, trail_texture, life, update_target, damage, faction) {
+		var self = Bullet(x, y, texture, 0, 0, life, damage, faction);
 		
 		self.collide_agents = false;
 		
@@ -783,40 +937,48 @@ function start_game() {
 			return agent.exists && agent.faction != self.faction;
 		}
 		
-		self.random_pivot = 200;
-		self.random_lerp = 0.0;
-		self.trail_size = 17;
-		self.trail_texture = 'trail';
+		self.trail_size = trail_size;
+		self.trail_texture = trail_texture;
+		self.update_target = update_target;
+		self.blast_radius = 100;
+		self.inaccuracy = self.update_target ? 0 : 128;
 		
 		self.pos = {x: self.x, y: self.y};
 		self.last_pos = {x: self.x, y: self.y};
 		self.start = {x: self.x, y: self.y};
-		self.end = {x: self.target.x, y: self.target.y};
-		self.p1 = get_random_pivot();
-		self.p2 = get_random_pivot();
+		self.end = {x: self.target.x + random_range(-self.inaccuracy, self.inaccuracy), y: self.target.y + random_range(-self.inaccuracy, self.inaccuracy)};
+		self.p1 = get_random_pivot(pivot_spread, pivot_lerp);
+		self.p2 = get_random_pivot(pivot_spread, 0.5);
 		
-		function get_random_pivot() {
-			var p = {x: lerp(self.start.x, self.end.x, self.random_lerp), y: lerp(self.start.y, self.end.y, self.random_lerp)};
-			p.x += random_range(-self.random_pivot, self.random_pivot);
-			p.y += random_range(-self.random_pivot, self.random_pivot);
+		function get_random_pivot(pivot_spread, pivot_lerp) {
+			var p = {x: lerp(self.start.x, self.end.x, pivot_lerp), y: lerp(self.start.y, self.end.y, pivot_lerp)};
+			p.x += random_range(-pivot_spread, pivot_spread);
+			p.y += random_range(-pivot_spread, pivot_spread);
 			
 			return p;
 		}
 		
-		self.on_kill = function () {
+		self.on_life_end = function () {
+			if (!self.exists) return;
 			if (self.is_valid_target(self.target)) {
 				emit_particle(self.x, self.y, 1, flash_emitter, 'explosion');
 				if (self.life / self.total_life < 0.05) {
-					self.on_agent_collision(null, self.target);
+					if (self.target.faction !== self.faction) {
+						if (dist(self.end.x, self.end.y, self.target.x, self.target.y) < self.blast_radius) {
+							self.target.receive_damage(self.damage);
+						}
+					}
 				}
 			}
-			else {
-				emit_particle(self.x, self.y, 3, spark_emitter, 'particle');
-			}
+			emit_particle(self.x, self.y, 3, spark_emitter, 'particle');
+		}
+		
+		self.on_kill = function () {
+			emit_particle(self.x, self.y, 3, spark_emitter, 'particle');
 		}
 		
 		self.emit_trail = function () {
-			Trail(self.last_pos.x, self.last_pos.y, self.x, self.y, 'trail', 0.5);
+			Trail(self.last_pos.x, self.last_pos.y, self.x, self.y, self.trail_size, self.trail_texture, 0.5);
 		}
 
 		self.guidance = function () {
@@ -827,8 +989,10 @@ function start_game() {
 			
 			bezier_cubic(1.0 - self.life / self.total_life, self.start, self.p1, self.p2, self.end, self.pos);
 			
-			self.end.x = self.target.x;
-			self.end.y = self.target.y;
+			if (self.update_target) {
+				self.end.x = self.target.x;
+				self.end.y = self.target.y;
+			}
 			
 			self.x = self.pos.x;
 			self.y = self.pos.y;
@@ -849,7 +1013,7 @@ function start_game() {
 		
 		self.host = host;
 		self.allow_blind_fire = true;
-		self.charge = 0.0;
+		self.charge = -200;
 		self.total_charge = 1.0;
 		self.ammo = null;
 		self.get_charge = function () {
@@ -862,6 +1026,7 @@ function start_game() {
 			self.on_update();
 		}
 		self.launch = function (x, y, target) {
+			if (self.charge < -100) self.charge = self.total_charge;
 			if (target !== null || self.allow_blind_fire) {
 				while (self.charge >= self.total_charge) {
 					if (self.ammo !== null) {
@@ -928,12 +1093,16 @@ function start_game() {
 		var self = Weapon(host);
 		
 		self.total_charge = 0.25;
-		self.missile_speed = 1800;
 		self.missile_texture = 'missile';
-		self.missile_spread = 5;
 		self.missile_life = 0.5;
 		self.missile_size = 0.6;
 		self.missile_damage = 10;
+		self.missile_pivot_spread = 200;
+		self.missile_pivot_lerp = 0.5;
+		self.missile_trail_size = 15;
+		self.missile_traile_texture = 'trail';
+		self.missile_update_target = true;
+		self.auto_target = false;
 		self.allow_blind_fire = false;
 		self.pellets = 1;
 		
@@ -942,15 +1111,28 @@ function start_game() {
 			var angle = xy_to_angle(target.x - x, target.y - y);
 			angle_to_point(temp_point, angle, host.launch_offset);
 			for (var i = 0; i < self.pellets; ++i) {
+				if (self.auto_target) {
+					var valid_targets = [];
+					for (var j = 0; j < agent_group.children.length; ++j) {
+						var agent = agent_group.children[j];
+						if (host.is_valid_target(agent)) {
+							valid_targets.push(agent);
+						}
+					}
+					target = random_select_array(valid_targets);
+				}
 				var spread = rad(random_range(-self.missile_spread, self.missile_spread));
 				var missile = Missile(
 					x + temp_point.x,
 					y + temp_point.y,
 					self.missile_texture,
 					target,
-					angle + spread,
-					self.missile_speed,
+					self.missile_pivot_spread,
+					self.missile_pivot_lerp,
+					self.missile_trail_size,
+					self.missile_traile_texture,
 					self.missile_life,
+					self.missile_update_target,
 					self.missile_damage,
 					host.faction
 				);
@@ -962,32 +1144,36 @@ function start_game() {
 	}
 	
 	AssaultRifle.icon = 'assault_rifle_icon';
+	AssaultRifle.icon_color = 0xffffff;
+	AssaultRifle.display_name = 'Assault Rifle';
 	AssaultRifle.pickup_ammo = null;
 	function AssaultRifle(host) {
 		var self = Gun(host);
 		
 		self.type = AssaultRifle;
 		
-		self.total_charge = 0.1;
+		self.total_charge = 0.12;
 		self.bullet_speed = 1800;
 		self.bullet_spread = 5;
 		self.bullet_texture = 'bullet';
 		self.bullet_life = 0.5;
 		self.bullet_size = 0.6;
-		self.bullet_damage = 10;
+		self.bullet_damage = 7.5;
 		self.pellets = 1;
 		
 		return self;
 	}
 	
 	Shotgun.icon = 'shotgun_icon';
-	Shotgun.pickup_ammo = 20;
+	Shotgun.icon_color = 0x44bb44;
+	Shotgun.display_name = 'Shotgun';
+	Shotgun.pickup_ammo = 12;
 	function Shotgun(host) {
 		var self = Gun(host);
 		
 		self.type = Shotgun;
 		
-		self.total_charge = 0.75;
+		self.total_charge = 1.0;
 		self.bullet_speed = 1800;
 		self.bullet_spread = 15;
 		self.bullet_texture = 'bullet';
@@ -1000,18 +1186,20 @@ function start_game() {
 	}
 	
 	Sniper.icon = 'sniper_icon';
-	Sniper.pickup_ammo = 20;
+	Sniper.icon_color = 0x4444bb;
+	Sniper.display_name = 'Sniper Rifle';
+	Sniper.pickup_ammo = 12;
 	function Sniper(host) {
 		var self = Gun(host);
 		
 		self.type = Sniper;
 		
-		self.total_charge = 1.0;
-		self.bullet_speed = 2200;
+		self.total_charge = 1.25;
+		self.bullet_speed = 1800;
 		self.bullet_spread = 0;
 		self.bullet_texture = 'bullet';
 		self.bullet_life = 1.0;
-		self.bullet_size = 1.0;
+		self.bullet_size = 0.8;
 		self.bullet_damage = 100;
 		self.pellets = 1;
 		
@@ -1019,63 +1207,78 @@ function start_game() {
 	}
 	
 	DualMissile.icon = 'dual_missile_icon';
+	DualMissile.icon_color = 0x44bbbb;
+	DualMissile.display_name = 'Dual Missile';
 	DualMissile.pickup_ammo = 20;
 	function DualMissile(host) {
 		var self = MissileLauncher(host);
 		
 		self.type = DualMissile;
 		
-		self.total_charge = 0.5;
-		self.missile_speed = 1800;
-		self.missile_spread = 135;
+		self.total_charge = 0.75;
 		self.missile_texture = 'missile';
 		self.missile_life = 0.5;
 		self.missile_size = 0.6;
-		self.missile_damage = 50;
+		self.missile_damage = 45;
+		self.missile_pivot_spread = 200;
+		self.missile_pivot_lerp = 0.0;
+		self.missile_trail_size = 17;
+		self.missile_traile_texture = 'trail';
 		self.pellets = 2;
 		
 		return self;
 	}
 	
 	MissileSalvo.icon = 'missile_salvo_icon';
-	MissileSalvo.pickup_ammo = 20;
+	MissileSalvo.icon_color = 0xbb8844;
+	MissileSalvo.display_name = 'Missile Launcher';
+	MissileSalvo.pickup_ammo = 40;
 	function MissileSalvo(host) {
 		var self = MissileLauncher(host);
 		
 		self.type = MissileSalvo;
-		
-		self.total_charge = 0.1;
-		self.missile_speed = 1800;
-		self.missile_spread = 5;
+
+		self.total_charge = 0.25;
 		self.missile_texture = 'missile';
-		self.missile_life = 0.5;
-		self.missile_size = 0.6;
-		self.missile_damage = 10;
+		self.missile_life = 0.4;
+		self.missile_size = 0.5;
+		self.missile_damage = 30;
+		self.missile_pivot_spread = 250;
+		self.missile_pivot_lerp = 0.5;
+		self.missile_trail_size = 14;
+		self.missile_traile_texture = 'trail';
 		self.pellets = 1;
 		
 		return self;
 	}
 	
 	ClusterMissile.icon = 'cluster_missile_icon';
-	ClusterMissile.pickup_ammo = 20;
+	ClusterMissile.icon_color = 0xbb44bb;
+	ClusterMissile.display_name = 'Cluster Missile';
+	ClusterMissile.pickup_ammo = 8;
 	function ClusterMissile(host) {
 		var self = MissileLauncher(host);
 		
 		self.type = ClusterMissile;
 		
-		self.total_charge = 0.1;
-		self.missile_speed = 1800;
-		self.missile_spread = 5;
+		self.total_charge = 2.0;
 		self.missile_texture = 'missile';
-		self.missile_life = 0.5;
-		self.missile_size = 0.6;
-		self.missile_damage = 10;
-		self.pellets = 1;
+		self.missile_life = 0.6;
+		self.missile_size = 0.5;
+		self.missile_damage = 40;
+		self.missile_pivot_spread = 300;
+		self.missile_pivot_lerp = 0.0;
+		self.missile_trail_size = 15;
+		self.missile_traile_texture = 'trail';
+		self.auto_target = true;
+		self.pellets = 6;
 		
 		return self;
 	}
 	
 	ElectricShock.icon = 'electric_shock_icon';
+	ElectricShock.icon_color = 0xff4488;
+	ElectricShock.display_name = 'Electric Shock';
 	ElectricShock.pickup_ammo = 20;
 	function ElectricShock(host) {
 		
@@ -1085,11 +1288,11 @@ function start_game() {
 	
 	var weapon_list = [
 		AssaultRifle,
-		// Shotgun,
-		// Sniper,
+		Shotgun,
+		Sniper,
 		DualMissile,
-		// MissileSalvo,
-		// ClusterMissile,
+		MissileSalvo,
+		ClusterMissile,
 		// ElectricShock,
 	]
 	
@@ -1099,6 +1302,8 @@ function start_game() {
 		var self = pickup_group.create(pos[0], pos[1], 'icon_base');
 		
 		self.anchor.set(0.5);
+		
+		pickups_left++;
 		
 		var valid_weapons = [];
 		for (var i = 0; i < weapon_list.length; ++i) {
@@ -1111,9 +1316,12 @@ function start_game() {
 		self.icon = pickup_icon_group.create(self.x, self.y, self.weapon_type.icon);
 		self.icon.anchor.set(0.5);
 		
+		self.tint = self.weapon_type.icon_color;
+		
 		self.custom_destroy = function () {
 			self.icon.destroy();
 			self.destroy();
+			pickups_left--;
 		}
 		
 		return self;
@@ -1133,11 +1341,21 @@ function start_game() {
 	
 	var agent_group;
 	var player;
+	var player_ui_group;
 	
 	var map_data;
 	
 	var pickup_group;
 	var pickup_icon_group;
+	
+	var ui_group;
+	
+	var current_weapon_icon_base;
+	var current_weapon_icon;
+	var current_weapon_text;
+	var wave_text;
+	var health_bar;
+	var arrow;
 	
 	var bullet_pool;
 	var trail_pool;
@@ -1148,6 +1366,8 @@ function start_game() {
 	
 	var current_wave;
 	var enemies_left;
+	
+	var pickups_left = 0;
 	
 	var path_finder = new EasyStar.js();
 	
@@ -1170,7 +1390,10 @@ function start_game() {
 	var explosion_speed        = 0;
 	var explosion_drag         = 0;
 	var path_finder_iterations = 10;
-	var random_walk_steps      = 2048;
+	var random_walk_steps      = 1024;
+	var arrow_show_range       = 400;
+	var arrow_radius           = 250;
+	var pickups_per_wave       = 3;
 	
 	var camera_lerp = 0.05;
 	
@@ -1181,11 +1404,15 @@ function start_game() {
 	
 	function preload() {
 		game.load.image('block', 'images/block.png');
+		game.load.image('platform', 'images/platform.png');
 		game.load.image('player', 'images/player.png');
 		game.load.image('star', 'images/star.png');
 		game.load.image('crosshair', 'images/crosshair.png');
+		game.load.image('arrow', 'images/arrow.png');
 		game.load.image('bullet', 'images/bullet.png');
+		game.load.image('bullet2', 'images/bullet2.png');
 		game.load.image('missile', 'images/missile.png');
+		game.load.image('missile2', 'images/missile2.png');
 		game.load.image('particle', 'images/particle.png');
 		game.load.image('particle2', 'images/particle2.png');
 		game.load.image('explosion', 'images/explosion.png');
@@ -1199,6 +1426,9 @@ function start_game() {
 		game.load.image('cluster_missile_icon', 'images/cluster_missile_icon.png');
 		game.load.image('electric_shock_icon', 'images/electric_shock_icon.png');
 		game.load.image('trail', 'images/trail.png');
+		game.load.image('trail2', 'images/trail2.png');
+		
+		game.load.bitmapFont('gem', 'fonts/gem.png', 'fonts/gem.xml');
 	}
 	
 	/* function create_tile_layer(name, width, height, tile_width, tile_height, depth, tint) {
@@ -1281,15 +1511,17 @@ function start_game() {
 		[0, -1],
 		[0, 1],
 	];
-	function random_walk(width, height, steps, start_x, start_y) {
+	function random_walk(width, height, steps, start_x, start_y, longer_corridors) {
 		var array = create_2d_array(width, height, 0);
+		
+		if (longer_corridors === undefined) longer_corridors = false;
 		
 		var temp_dir = random_select_array(directions);
 		var last_delta = [temp_dir[0], temp_dir[1]];
 		while (steps--) {
 			array[start_x][start_y] = 1;
 			var valid_directions = directions.slice();
-			valid_directions.push(last_delta);
+			if (longer_corridors) valid_directions.push(last_delta);
 			for (var i = 0; i < valid_directions.length; ++i) {
 				if (!in_bounds(start_x + valid_directions[i][0], start_y + valid_directions[i][1], width, height)) {
 					valid_directions.splice(i, 1);
@@ -1383,7 +1615,8 @@ function start_game() {
 	
 	function spawn_wave(wave) {
 		enemies_left = 0;
-		var total_threat = 5.0 + (wave - 1) * 1.0;
+		var total_threat = clamp(5.0 + (wave - 1) * 1.0, 0.0, 40.0);
+		var hp_mul = 1.0 + (wave - 1) * 0.05;
 		while (total_threat > 0) {
 			var valid_enemies = []
 			for (var i = 0; i < enemy_list.length; ++i) {
@@ -1393,36 +1626,18 @@ function start_game() {
 				}
 			}
 			
+			if (valid_enemies.length === 0) break;
+			
 			var selected_enemy = random_select_array(valid_enemies);
 			total_threat -= selected_enemy.threat;
-			selected_enemy();
+			selected_enemy(hp_mul);
 			
 			enemies_left++;
 		}
 		
-		Pickup();
-		Pickup();
-		Pickup();
-		Pickup();
-		Pickup();
-		Pickup();
-		Pickup();
-		Pickup();
-		Pickup();
-		Pickup();
-		Pickup();
-		Pickup();
-		Pickup();
-		Pickup();
-		
-		Enemy();
-		Enemy();
-		Enemy();
-		Enemy();
-		Enemy();
-		Enemy();
-		Enemy();
-		Enemy();
+		while (pickups_left < pickups_per_wave) {
+			Pickup();
+		}
 	}
 	
 	function tile_to_x(tile_x, tile_width) {
@@ -1512,12 +1727,7 @@ function start_game() {
 		pickup_group.physicsBodyType = Phaser.Physics.ARCADE;
 		pickup_icon_group = game.add.group();
 		
-		player = Player();
-		var starting_tile_pos = get_random_floor_pos(map_data, world_width, world_height, world_tile_width, world_tile_height);
-		player.x = starting_tile_pos[0];
-		player.y = starting_tile_pos[1];
-		
-		camera_follow(player, true);
+		player_ui_group = game.add.group();
 		
 		bullet_pool = SpritePool(bullet_pool_min_count, Phaser.Physics.ARCADE);
 		trail_pool = SpritePool(bullet_pool_min_count, null, true);
@@ -1529,8 +1739,71 @@ function start_game() {
 		explosion_emitter = make_emitter(explosion_lifespan, explosion_scale, explosion_speed, explosion_drag);
 		explosion_emitter.setScale(explosion_scale / 2, explosion_scale, explosion_scale / 2, explosion_scale, explosion_lifespan);
 		
+		ui_group = game.add.group();
+		ui_group.fixedToCamera = true;
+		
+		var ui_block = ui_group.create(0, 0, 'platform');
+		ui_block.width = game.width;
+		ui_block.height = 70;
+		ui_block.tint = 0x000000;
+		ui_block.alpha = 0.5;
+		
+		var text_y = 22;
+		var text_size = 24;
+		
+		current_weapon_icon_base = ui_group.create(35, 35, 'icon_base');
+		current_weapon_icon_base.anchor.set(0.5);
+		current_weapon_icon_base.tint = 0x000000;
+		
+		current_weapon_icon = ui_group.create(35, 35);
+		current_weapon_icon.loaded_texture = null;
+		current_weapon_icon.anchor.set(0.5);
+		
+		current_weapon_text = game.add.bitmapText(70, text_y, 'gem', '', text_size, ui_group);
+		
+		wave_text = game.add.bitmapText(game.width / 2 - 80, text_y, 'gem', '', text_size, ui_group);
+		
+		var health_bar_base = ui_group.create(game.width - 120, 35, 'platform');
+		health_bar_base.anchor.setTo(0.0, 0.5);
+		health_bar_base.width = 100;
+		health_bar_base.height = 20;
+		health_bar_base.tint = 0x000000;
+			
+		health_bar = ui_group.create(health_bar_base.x, health_bar_base.y, 'platform');
+		health_bar.anchor.setTo(0.0, 0.5);
+		health_bar.width = health_bar_base.width;
+		health_bar.total_width = health_bar.width;
+		health_bar.height = health_bar_base.height;
+		health_bar.tint = 0xff0000;
+		
+		var health_bar_text = game.add.bitmapText(game.width - 180, text_y, 'gem', 'HP:', text_size, ui_group);
+		
+		arrow = ui_group.create(0, 0, 'arrow');
+		arrow.opacity = 0.0;
+		arrow.anchor.set(0.5);
+		arrow.tint = 0xff0000;
+		
+		
+		game_start();
+	}
+	
+	function game_start() {
+		
+		for (var i = 0; i < agent_group.children.length; ++i) {
+			var agent = agent_group.children[i];
+			agent.destroy();
+			agent.on_death();
+		}
+		
+		player = Player();
+		var starting_tile_pos = get_random_floor_pos(map_data, world_width, world_height, world_tile_width, world_tile_height);
+		player.reset(starting_tile_pos[0], starting_tile_pos[1]);
+		
+		camera_follow(player, true);
+		
 		current_wave = 1;
 		spawn_wave(current_wave);
+		
 	}
 	
 	function camera_follow(target, teleport) {
@@ -1551,6 +1824,64 @@ function start_game() {
 			current_wave++;
 			spawn_wave(current_wave);
 		}
+		
+		if (!player.exists) {
+			if (input_manager.is_key_pressed_once(Phaser.KeyCode.C)) {
+				game_start();
+			}
+		}
+	}
+	
+	var temp_arrow_point = {x:0, y:0};
+	function ui_update() {
+		if (player.weapons.length === 0) {
+			current_weapon_icon_base.tint = 0x000000;
+			current_weapon_icon.alpha = 0;
+			current_weapon_text.text = '';
+		}
+		else {
+			var weapon = player.weapons[player.current_weapon % player.weapons.length];
+			current_weapon_icon_base.tint = weapon.type.icon_color;
+			current_weapon_icon.alpha = 1;
+			current_weapon_text.text = weapon.type.display_name + ' | Ammo:' + (weapon.ammo === null ? '--' : weapon.ammo);
+			if (current_weapon_icon.loaded_texture !== weapon.type.icon) {
+				current_weapon_icon.loadTexture(weapon.type.icon);
+				current_weapon_icon.loaded_texture = weapon.type.icon;
+			}
+		}
+		
+		health_bar.width = health_bar.total_width * player.hp / player.max_hp;
+		
+		if (player.exists) {
+			wave_text.text = 'Wave: ' + current_wave + ' | Enemies Left: ' + enemies_left;
+		}
+		else {
+			wave_text.text = 'Game Over: Press C to Restart';
+		}
+		
+		var min_dist_enemy = null;
+		var min_dist = -1;
+		for (var i = 0; i < agent_group.children.length; ++i) {
+			var agent = agent_group.children[i];
+			if (agent.faction !== 'enemy' || !agent.exists) continue;
+			var agent_dist = dist(player.x, player.y, agent.x, agent.y);
+			if (min_dist < 0 || agent_dist < min_dist) {
+				min_dist = agent_dist;
+				min_dist_enemy = agent;
+			}
+		}
+		
+		if (min_dist_enemy !== null && min_dist > arrow_show_range) {
+			arrow.alpha = 0.35;
+			var angle = xy_to_angle(min_dist_enemy.x - player.x, min_dist_enemy.y - player.y);
+			arrow.angle = deg(angle);
+			angle_to_point(temp_arrow_point, angle, arrow_radius);
+			arrow.x = game.width / 2 + temp_arrow_point.x;
+			arrow.y = game.height / 2 + temp_arrow_point.y;
+		}
+		else {
+			arrow.alpha = 0.0;
+		}
 	}
 	
 	function update() {
@@ -1559,6 +1890,7 @@ function start_game() {
 		update_wind();
 		path_finder.calculate();
 		wave_check();
+		ui_update();
 	}
 	
 }
