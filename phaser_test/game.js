@@ -396,6 +396,7 @@ function start_game() {
 		}
 		
 		self.check_health = function () {
+			if (!self.exists) return;
 			if (self.hp <= 0) {
 				if (game.camera.target === self) {
 					game.camera.unfollow();
@@ -1539,6 +1540,36 @@ function start_game() {
 			}
 		}
 		
+		return center_map(array, width, height);
+	}
+	
+	function generate_maze(width, height) {
+		var array = create_2d_array(width, height, 0);
+		
+		function walk(x, y) {
+			array[x][y] = 1;
+			// console.log(x, y);
+			var valid_directions = directions.slice();
+			while (valid_directions.length > 0) {
+				var selection = random_int(valid_directions.length);
+				var direction = valid_directions[selection];
+				valid_directions.splice(selection, 1);
+				var new_x = x + direction[0];
+				var new_y = y + direction[1];
+				// console.log(x, y, new_x, new_y, has_floor_neighbour(array, new_x, new_y, width, height, x, y));
+				if (in_bounds(new_x, new_y, width, height) && array[new_x][new_y] !== 1 && !has_floor_neighbour(array, new_x, new_y, width, height, x, y, directions)) {
+					walk(new_x, new_y);
+				}
+			}
+		}
+		
+		walk(0, 0);
+		
+		// return center_map(array, width, height);
+		return array;
+	}
+	
+	function center_map(array, width, height) {
 		var center_x = Math.floor(width / 2);
 		var center_y = Math.floor(height / 2);
 		var min_x = width;
@@ -1577,11 +1608,14 @@ function start_game() {
 		[1, 1],
 		[-1, -1],
 	];
-	function has_floor_neighbour(map_data, x, y, width, height) {
-		for (var i = 0; i < directions_all.length; ++i) {
-			var direction = directions_all[i];
+	function has_floor_neighbour(map_data, x, y, width, height, ignore_x, ignore_y, directions) {
+		if (ignore_x === undefined) ignore_x = x;
+		if (ignore_y === undefined) ignore_y = y;
+		if (directions === undefined) directions = directions_all;
+		for (var i = 0; i < directions.length; ++i) {
+			var direction = directions[i];
 			if (get_map_data(map_data, x + direction[0], y + direction[1], width, height) === 1) {
-				return true;
+				if (x + direction[0] !== ignore_x || y + direction[1] !== ignore_y) return true;
 			}
 		}
 		
@@ -1593,6 +1627,7 @@ function start_game() {
 		var start_x = random_int(world_width);
 		var start_y = random_int(world_height);
 		var map_data = random_walk(world_width, world_height, random_walk_steps, start_x, start_y);
+		// var map_data = generate_maze(world_width, world_height);
 		for (var i = 0; i < world_width; ++i) {
 			for (var j = 0; j < world_height; ++j) {
 				if (map_data[i][j] > 0) {

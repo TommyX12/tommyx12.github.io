@@ -91,6 +91,8 @@ function create_2d_array(size1, size2, initial_value) {
 }
 
 function random_select_array(array) {
+	if (array.length === 0) return null;
+	
 	return array[random_int(array.length)];
 }
 
