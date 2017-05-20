@@ -84,11 +84,11 @@ function start_game() {
 		}
 		
 		self.cycle_form = function () {
-			self.rotation++;
-			if (self.rotation >= self.block_form.length) {
-				self.rotation = 0;
+			var new_rotation = self.rotation + 1;
+			if (new_rotation >= self.block_form.length) {
+				new_rotation = 0;
 			}
-			self.set_form(self.block_form, self.rotation);
+			self.set_form(self.block_form, new_rotation);
 		}
 		
 		self.redraw = function () {
