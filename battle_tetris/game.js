@@ -517,6 +517,7 @@ function start_game() {
 		ui_update();
 		
 		if (input_manager.is_key_pressed_once(Phaser.KeyCode.UP)) {
+			// vicky
 			b1.move(0, -1);
 		}
 		if (input_manager.is_key_pressed_once(Phaser.KeyCode.DOWN)) {
