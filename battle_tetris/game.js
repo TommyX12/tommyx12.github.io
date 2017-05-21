@@ -1,8 +1,13 @@
 /*
 	TODO:
+		- turn system
+		- projectile aiming and launching
+		- tetris block dropping
+		- row cancellation
+		- game winning and losing
 		- more progression and balancing - 40
 		
-		- basic user interface - 30
+		- user interface - 30
 		- music - 15
 		- sound effect - 15
 	
@@ -258,6 +263,147 @@ function start_game() {
 			],
 		],
 	]
+	
+	var player_starting_pos = [
+		0.2,
+		0.8,
+	];
+	var player_initial_angle = [
+		rad(-45),
+		rad(-135),
+	]
+	var player_initial_force = 10;
+	var player_keys = [
+		{
+			up: Phaser.KeyCode.W,
+			down: Phaser.KeyCode.S,
+			left: Phaser.KeyCode.A,
+			right: Phaser.KeyCode.D,
+			fire: Phaser.KeyCode.F,
+			rotate: Phaser.KeyCode.R,
+		},
+		{
+			up: Phaser.KeyCode.UP,
+			down: Phaser.KeyCode.DOWN,
+			left: Phaser.KeyCode.LEFT,
+			right: Phaser.KeyCode.RIGHT,
+			fire: Phaser.KeyCode.NUMPAD_0,
+			rotate: Phaser.KeyCode.NUMPAD_1,
+		},
+	];
+	function Player(texture, keys, initial_angle, initial_force) {
+		var self = player_group.create(0, 0, texture);
+		
+		self.arrow = player_ui_group.create(0, 0, 'arrow');
+		self.arrow.anchor.set(0.5);
+		self.arrow.scale.set(0.5);
+		
+		self.anchor.set(0.5);
+		self.scale.set(0.5);
+		
+		self.body.bounce.set(0.5);
+		self.body.gravity.set(0, 250);
+		self.body.collideWorldBounds = true;
+		
+		self.friction_air = 0.01;
+		self.friction_ground = 0.1;
+		self.max_speed_air = 60;
+		self.max_speed_ground = 60;
+		self.jump_acc = 200;
+		
+		self.ready = false;
+		
+		self.on_floor = false;
+		
+		self.aim_angle = initial_angle;
+		self.aim_force = initial_force;
+		
+		self.keys = keys;
+		
+		self.state = 'moving'; // moving, aiming
+		
+		self.move = function(x) {
+			if (self.on_floor) {
+				self.body.velocity.x += x * self.max_speed_ground * self.friction_ground;
+			}
+			else {
+				self.body.velocity.x += x * self.max_speed_air * self.friction_air;
+			}
+		};
+		
+		self.jump = function () {
+			if (!self.on_floor) return;
+			self.body.velocity.y = -self.jump_acc;
+		}
+		
+		self.switch_state = function (state) {
+			self.state = state;
+			self.ready = false;
+		}
+		
+		self.custom_kill = function () {
+			self.arrow.kill();
+			self.kill();
+		}
+		
+		var temp_point = {x: 0, y: 0};
+		self.aim_arrow = function () {
+			angle_to_point(temp_point, self.aim_angle, self.aim_force + 20);
+			temp_point.x += self.x;
+			temp_point.y += self.y;
+			self.arrow.reset(temp_point.x, temp_point.y);
+			self.arrow.angle = deg(self.aim_angle);
+		}
+		
+		self.update = function () {
+			self.on_floor = self.body.onFloor();
+			
+			if (self.state === 'moving') {
+				if (input_manager.is_key_holding(self.keys.up)) {
+					self.jump();
+				}
+				if (input_manager.is_key_holding(self.keys.left)) {
+					self.move(-1.0);
+				}
+				if (input_manager.is_key_holding(self.keys.right)) {
+					self.move(1.0);
+				}
+				
+				self.arrow.kill();
+			}
+			else if (self.state === 'aiming') {
+				if (input_manager.is_key_holding(self.keys.up)) {
+					
+				}
+				if (input_manager.is_key_holding(self.keys.down)) {
+					
+				}
+				if (input_manager.is_key_holding(self.keys.left)) {
+					
+				}
+				if (input_manager.is_key_holding(self.keys.right)) {
+					
+				}
+				if (input_manager.is_key_pressed_once(self.keys.fire)) {
+					self.ready = true;
+				}
+				if (input_manager.is_key_pressed_once(self.keys.rotate)) {
+					
+				}
+				
+				self.aim_arrow();
+			}
+			
+			if (self.on_floor) {
+				self.body.velocity.x *= 1.0 - self.friction_ground;
+			}
+			else {
+				self.body.velocity.x *= 1.0 - self.friction_air;
+			}
+		}
+		
+		return self;
+	}
 
 	var game = new Phaser.Game(960, 720, Phaser.AUTO, 'game', { preload: preload, create: create, update: update});
 	
@@ -287,8 +433,17 @@ function start_game() {
 	
 	var trail_pool;
 	
+	var player_group;
+	var player_ui_group;
+	
+	var player_list = [];
+	var current_player = 0;
+	
 	function preload() {
 		game.load.image('platform', 'images/platform.png');
+		game.load.image('player1', 'images/player1.png');
+		game.load.image('player2', 'images/player2.png');
+		game.load.image('arrow', 'images/arrow.png');
 		
 		game.load.bitmapFont('gem', 'fonts/gem.png', 'fonts/gem.xml');
 	}
@@ -362,6 +517,7 @@ function start_game() {
 		angle_to_point(wind_d, wind_angle, wind_speed * game.time.physicsElapsed);
 		wind_angle = (wind_angle + wind_angle_delta * game.time.physicsElapsed) % (Math.PI * 2);
 	}
+	// Vicky
 	
 	function tile_to_x(tile_x, tile_width) {
 		return tile_x * tile_width + (tile_width / 2);
@@ -476,6 +632,14 @@ function start_game() {
 		
 		trail_pool = SpritePool(game, bullet_pool_min_count, null, true);
 		
+		player_ui_group = game.add.group();
+		
+		player_group = game.add.group();
+		player_group.enableBody = true;
+		player_group.physicsBodyType = Phaser.Physics.ARCADE;
+		player_list.push(Player('player1', player_keys[0], player_initial_angle[0], player_initial_force));
+		player_list.push(Player('player2', player_keys[1], player_initial_angle[1], player_initial_force));
+		
 		ui_group = game.add.group();
 		ui_group.fixedToCamera = true;
 		
@@ -495,7 +659,18 @@ function start_game() {
 		
 		b1 = TetrisBlock(5, 5, tetris_blocks[0], 0);
 		b2 = TetrisBlock(15, 15, tetris_blocks[1], 0);
-		b3 = TetrisBlock(25, 25, tetris_blocks[2], 2);
+		b3 = TetrisBlock(30, 34, tetris_blocks[2], 2);
+		
+		current_player = 0;
+		
+		for (var i = 0; i < player_list.length; ++i) {
+			var player = player_list[i];
+			player.reset(player_starting_pos[i] * game.world.width, game.world.height - 100);
+		}
+		
+	}
+	
+	function fire_projectile(angle, force) {
 		
 	}
 	
@@ -511,27 +686,16 @@ function start_game() {
 		
 	}
 	
+	function player_collision() {
+		game.physics.arcade.collide(player_group, layer);
+		game.physics.arcade.collide(player_group);
+	}
+	
 	function update() {
 		input_manager.update();
+		player_collision();
 		update_wind();
 		ui_update();
-		
-		if (input_manager.is_key_pressed_once(Phaser.KeyCode.UP)) {
-			// vicky
-			b1.move(0, -1);
-		}
-		if (input_manager.is_key_pressed_once(Phaser.KeyCode.DOWN)) {
-			b1.move(0, 1);
-		}
-		if (input_manager.is_key_pressed_once(Phaser.KeyCode.LEFT)) {
-			b1.move(-1, 0);
-		}
-		if (input_manager.is_key_pressed_once(Phaser.KeyCode.RIGHT)) {
-			b1.move(1, 0);
-		}
-		if (input_manager.is_key_pressed_once(Phaser.KeyCode.SPACEBAR)) {
-			b1.cycle_form();
-		}
 	}
 	
 }
