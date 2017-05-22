@@ -85,7 +85,7 @@ function start_game() {
 		self.last_drawn_x = [null, null, null, null];
 		self.last_drawn_y = [null, null, null, null];
 		
-		self.move_delay = 0.1;
+		self.move_delay = 0.2;
 		self.move_delay_timer = 0.0;
 		
 		self.dx = dx;
@@ -132,8 +132,9 @@ function start_game() {
 		
 		self.redraw = function () {
 			for (var i = 0; i < 4; ++i) {
-				if (self.last_drawn_x[i] !== null);
-				tilemap.removeTile(self.last_drawn_x[i], self.last_drawn_y[i], layer);
+				if (self.last_drawn_x[i] !== null) {
+					tilemap.removeTile(self.last_drawn_x[i], self.last_drawn_y[i], layer);
+				}
 			}
 			for (var i = 0; i < 4; ++i) {
 				var current_x = self.current_form[i][0] + self.x;
@@ -516,8 +517,8 @@ function start_game() {
 
 	var game = new Phaser.Game(960, 720, Phaser.AUTO, 'game', { preload: preload, create: create, update: update});
 	
-	var cursors;
 	// Vicky
+	var cursors;
 	
 	var input_manager;
 
