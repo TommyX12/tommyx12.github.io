@@ -1524,7 +1524,7 @@ function start_game() {
 		player_ui_group = game.add.group();
 		
 		bullet_pool = SpritePool(game, bullet_pool_min_count, Phaser.Physics.ARCADE);
-		trail_pool = SpritePool(game, bullet_pool_min_count, null, true);
+		trail_pool = SpritePool(game, bullet_pool_min_count, null);
 		
 		spark_emitter = make_emitter(spark_lifespan, spark_scale, spark_speed, spark_drag);
 
