@@ -13,6 +13,7 @@
 	
 	LATER TODO:
 		- more interesting map with more tile type and more stuff
+		- wind system for harder aiming
 		
 */
 
@@ -55,7 +56,26 @@ function start_game() {
 		return self;
 	}
 	
-	function TetrisBlock(x, y, block_form, rotation) {
+	function get_tetris_form_min_max(form) {
+		var min_x = 9999;
+		var min_y = 9999;
+		var max_x = -9999;
+		var max_y = -9999;
+		for (var i = 0; i < 4; ++i) {
+			min_x = Math.min(min_x, form[i][0]);
+			max_x = Math.max(max_x, form[i][0]);
+			min_y = Math.min(min_y, form[i][1]);
+			max_y = Math.max(max_y, form[i][1]);
+		}
+		return {
+			min_x: min_x,
+			min_y: min_y,
+			max_x: max_x,
+			max_y: max_y,
+		};
+	}
+	
+	function TetrisBlock(x, y, dx, dy, block_form, rotation) {
 		var self = new Object();
 		
 		self.x = x;
@@ -65,13 +85,23 @@ function start_game() {
 		self.last_drawn_x = [null, null, null, null];
 		self.last_drawn_y = [null, null, null, null];
 		
+		self.move_delay = 0.1;
+		self.move_delay_timer = 0.0;
+		
+		self.dx = dx;
+		self.dy = dy;
+		self.stopped = false;
+		
 		self.move = function (dx, dy) {
 			if (dx === 0 && dy === 0) return;
 			self.x += dx;
 			self.y += dy;
 			if (!self.redraw()) {
 				self.move(-dx, -dy);
+				return false;
 			}
+			
+			return true;
 		}
 		
 		self.set_form = function (block_form, rotation) {
@@ -82,6 +112,10 @@ function start_game() {
 			self.block_form = block_form;
 			self.rotation = rotation;
 			self.current_form = block_form[rotation];
+			self.form_data = get_tetris_form_min_max(self.current_form);
+			
+			self.x = clamp(self.x, -self.form_data.min_x, world_width - 1 - self.form_data.max_x);
+			self.y = clamp(self.y, -self.form_data.min_y, world_width - 1 - self.form_data.max_y);
 			
 			if (!self.redraw()) {
 				self.set_form(old_block_form, old_rotation);
@@ -104,7 +138,7 @@ function start_game() {
 			for (var i = 0; i < 4; ++i) {
 				var current_x = self.current_form[i][0] + self.x;
 				var current_y = self.current_form[i][1] + self.y;
-				if (tilemap.getTile(current_x, current_y, layer)) {
+				if (tilemap.getTile(current_x, current_y, layer) || !in_bounds(current_x, current_y, world_width, world_height)) {
 					return false;
 				}
 				tilemap.putTile(self.color, current_x, current_y, layer);
@@ -117,10 +151,21 @@ function start_game() {
 		
 		self.set_form(block_form, rotation);
 		
+		self.update = function () {
+			if (self.move_delay_timer >= self.move_delay) {
+				if (!self.stopped && !self.move(self.dx, self.dy)){
+					self.stopped = true;
+				}
+				self.move_delay_timer -= self.move_delay;
+			}
+			
+			self.move_delay_timer += game.time.physicsElapsed;
+		}
+		
 		return self;
 	}
 	
-	var tetris_blocks = [
+	var tetris_block_forms = [
 		[
 			// ****
 			[
@@ -272,7 +317,17 @@ function start_game() {
 		rad(-45),
 		rad(-135),
 	]
-	var player_initial_force = 10;
+	var player_texture_suffix = [
+		'1',
+		'2',
+	]
+	var player_initial_force = 300;
+	var player_min_force = 100;
+	var player_max_force = 600;
+	var player_force_change = 400;
+	var player_min_angle = rad(-180);
+	var player_max_angle = rad(0);
+	var player_angle_change = rad(45);
 	var player_keys = [
 		{
 			up: Phaser.KeyCode.W,
@@ -291,7 +346,7 @@ function start_game() {
 			rotate: Phaser.KeyCode.NUMPAD_1,
 		},
 	];
-	function Player(texture, keys, initial_angle, initial_force) {
+	function Player(texture, keys, initial_angle, initial_force, texture_suffix) {
 		var self = player_group.create(0, 0, texture);
 		
 		self.arrow = player_ui_group.create(0, 0, 'arrow');
@@ -319,8 +374,9 @@ function start_game() {
 		self.aim_force = initial_force;
 		
 		self.keys = keys;
+		self.texture_suffix = texture_suffix;
 		
-		self.state = 'moving'; // moving, aiming
+		self.state = 'aiming'; // moving, aiming, waiting
 		
 		self.move = function(x) {
 			if (self.on_floor) {
@@ -336,19 +392,20 @@ function start_game() {
 			self.body.velocity.y = -self.jump_acc;
 		}
 		
-		self.switch_state = function (state) {
-			self.state = state;
-			self.ready = false;
-		}
-		
 		self.custom_kill = function () {
+			self.ready = false;
 			self.arrow.kill();
 			self.kill();
 		}
 		
+		self.launch_projectile = function () {
+			Projectile(self.x, self.y, self.aim_angle, self.aim_force, self.texture_suffix);
+			self.ready = false;
+		}
+		
 		var temp_point = {x: 0, y: 0};
 		self.aim_arrow = function () {
-			angle_to_point(temp_point, self.aim_angle, self.aim_force + 20);
+			angle_to_point(temp_point, self.aim_angle, self.aim_force * 0.1 + 20);
 			temp_point.x += self.x;
 			temp_point.y += self.y;
 			self.arrow.reset(temp_point.x, temp_point.y);
@@ -357,6 +414,13 @@ function start_game() {
 		
 		self.update = function () {
 			self.on_floor = self.body.onFloor();
+			
+			if (self.ready) {
+				self.arrow.tint = 0x00ff00;
+			}
+			else {
+				self.arrow.tint = 0xffffff;
+			}
 			
 			if (self.state === 'moving') {
 				if (input_manager.is_key_holding(self.keys.up)) {
@@ -372,25 +436,26 @@ function start_game() {
 				self.arrow.kill();
 			}
 			else if (self.state === 'aiming') {
-				if (input_manager.is_key_holding(self.keys.up)) {
-					
-				}
-				if (input_manager.is_key_holding(self.keys.down)) {
-					
-				}
-				if (input_manager.is_key_holding(self.keys.left)) {
-					
-				}
-				if (input_manager.is_key_holding(self.keys.right)) {
-					
+				if (!self.ready) {
+					if (input_manager.is_key_holding(self.keys.up)) {
+						self.aim_force = clamp(self.aim_force + player_force_change * game.time.physicsElapsed, player_min_force, player_max_force);
+					}
+					if (input_manager.is_key_holding(self.keys.down)) {
+						self.aim_force = clamp(self.aim_force - player_force_change * game.time.physicsElapsed, player_min_force, player_max_force);
+					}
+					if (input_manager.is_key_holding(self.keys.left)) {
+						self.aim_angle = clamp(self.aim_angle - player_angle_change * game.time.physicsElapsed, player_min_angle, player_max_angle);
+					}
+					if (input_manager.is_key_holding(self.keys.right)) {
+						self.aim_angle = clamp(self.aim_angle + player_angle_change * game.time.physicsElapsed, player_min_angle, player_max_angle);
+					}
+					if (input_manager.is_key_pressed_once(self.keys.rotate)) {
+						
+					}
 				}
 				if (input_manager.is_key_pressed_once(self.keys.fire)) {
-					self.ready = true;
+					self.ready = !self.ready;
 				}
-				if (input_manager.is_key_pressed_once(self.keys.rotate)) {
-					
-				}
-				
 				self.aim_arrow();
 			}
 			
@@ -404,10 +469,55 @@ function start_game() {
 		
 		return self;
 	}
+	
+	function Projectile(x, y, angle, force, texture_suffix) {
+		var self = projectile_group.create(x, y, 'projectile' + texture_suffix);
+		
+		self.anchor.set(0.5);
+		self.scale.set(0.4, 0.5);
+		
+		self.texture_suffix = texture_suffix;
+		
+		self.body.gravity.set(0, 250);
+		self.body.collideWorldBounds = false;
+		
+		angle_to_point(self.body.velocity, angle, force);
+		
+		self.last_pos = {x: x, y: y};
+		
+		self.collision = function () {
+			if (!in_world_bounds(self.x, self.y)) {
+				self.on_collision();
+			}
+			else if (game.physics.arcade.collide(self, layer)) {
+				self.on_collision();
+			}
+		}
+		
+		self.on_collision = function () {
+			mark_target(layer.getTileX(self.x));
+
+			emit_particle(self.x, self.y, 4, spark_emitter, 'particle' + self.texture_suffix);
+			emit_particle(self.x, self.y, 1, flash_emitter, 'explosion' + self.texture_suffix);
+			self.destroy();
+		}
+		
+		self.update = function () {
+			Trail(self.last_pos.x, self.last_pos.y, self.x, self.y, 12.0, 'trail' + self.texture_suffix, 1.5);
+			self.angle = deg(xy_to_angle(self.x - self.last_pos.x, self.y - self.last_pos.y));
+			self.last_pos.x = self.x;
+			self.last_pos.y = self.y;
+			
+			self.collision();
+		}
+		
+		return self;
+	}
 
 	var game = new Phaser.Game(960, 720, Phaser.AUTO, 'game', { preload: preload, create: create, update: update});
 	
 	var cursors;
+	// Vicky
 	
 	var input_manager;
 
@@ -418,13 +528,25 @@ function start_game() {
 	
 	var ui_group;
 	
+	var spark_emitter;
+	var flash_emitter;
+	
 	var world_tile_size       = 20;
 	var world_width;
 	var world_height;
+	var max_particles          = 200;
+	var spark_lifespan         = 200;
+	var spark_scale            = 0.75;
+	var spark_speed            = 750;
+	var spark_drag             = 5000;
+	var flash_lifespan         = 100;
+	var flash_scale            = 2.0;
+	var flash_speed            = 0;
+	var flash_drag             = 0;
 	
 	var bullet_pool_min_count = 100;
 	
-	var wind_speed = 125;
+	var wind_speed = 10;
 	var wind_angle = 0;
 	var wind_angle_delta = rad(36);
 	var wind_d = {x: 0, y: 0};
@@ -433,16 +555,31 @@ function start_game() {
 	
 	var trail_pool;
 	
+	var turn_state;
+	var turn_progess;
+	
+	var projectile_group;
+	
 	var player_group;
 	var player_ui_group;
 	
 	var player_list = [];
 	var current_player = 0;
 	
+	var tetris_blocks = [];
+	
 	function preload() {
 		game.load.image('platform', 'images/platform.png');
 		game.load.image('player1', 'images/player1.png');
 		game.load.image('player2', 'images/player2.png');
+		game.load.image('trail1', 'images/trail1.png');
+		game.load.image('trail2', 'images/trail2.png');
+		game.load.image('particle1', 'images/particle1.png');
+		game.load.image('particle2', 'images/particle2.png');
+		game.load.image('explosion1', 'images/explosion1.png');
+		game.load.image('explosion2', 'images/explosion2.png');
+		game.load.image('projectile1', 'images/projectile1.png');
+		game.load.image('projectile2', 'images/projectile2.png');
 		game.load.image('arrow', 'images/arrow.png');
 		
 		game.load.bitmapFont('gem', 'fonts/gem.png', 'fonts/gem.xml');
@@ -453,6 +590,26 @@ function start_game() {
 		layer.tint = tint;
 		return layer;
 	} 
+	
+	function emit_particle(x, y, num, emitter, texture) {
+		for (var i = 0; i < num; ++i) {
+			emitter.emitParticle(x, y, texture);
+		}
+	}
+	
+	function make_emitter(lifespan, scale, speed, drag) {
+		var emitter = game.add.emitter(0, 0, max_particles);
+		emitter.makeParticles('particle1');
+		emitter.setRotation(0, 0);
+		emitter.setAlpha(1.0, 0.0, lifespan, Phaser.Easing.Sinusoidal.In);
+		emitter.setScale(scale, scale / 2, scale, scale / 2, lifespan);
+		emitter.setXSpeed(-speed, speed);
+		emitter.setYSpeed(-speed, speed);
+		emitter.particleDrag.setTo(drag, drag);
+		emitter.lifespan = lifespan;
+		
+		return emitter;
+	}
 	
 	function enable_layer_collision(layer) {
 		tilemap.setCollisionByExclusion([], true, layer);
@@ -474,6 +631,10 @@ function start_game() {
 	
 	function in_bounds(x, y, width, height) {
 		return x >= 0 && x < width && y >= 0 && y < height;
+	}
+	
+	function in_world_bounds(x, y) {
+		return x >= 0 && x < game.world.width && y >= 0 && y <= game.world.height;
 	}
 
 	function get_map_data(map_data, x, y, width, height) {
@@ -517,61 +678,12 @@ function start_game() {
 		angle_to_point(wind_d, wind_angle, wind_speed * game.time.physicsElapsed);
 		wind_angle = (wind_angle + wind_angle_delta * game.time.physicsElapsed) % (Math.PI * 2);
 	}
-	// Vicky
 	
 	function tile_to_x(tile_x, tile_width) {
 		return tile_x * tile_width + (tile_width / 2);
 	}
 	function tile_to_y(tile_y, tile_height) {
 		return tile_y * tile_height + (tile_height / 2);
-	}
-	function get_random_floor_pos(map_data, width, height, tile_width, tile_height, bound_center_x, bound_center_y, bound_radius) {
-		var random_floor = get_random_floor(map_data, width, height, bound_center_x, bound_center_y, bound_radius);
-		if (random_floor !== null) {
-			return [tile_to_x(random_floor[0], tile_width), tile_to_y(random_floor[1], tile_height)];
-		}
-		
-		return null;
-	}
-
-	function get_random_floor(map_data, width, height, bound_center_x, bound_center_y, bound_radius) {
-		var count = 0;
-		var bound_min_x;
-		var bound_min_y;
-		var bound_max_x;
-		var bound_max_y;
-		if (bound_center_x !== undefined) {
-			bound_min_x = clamp(bound_center_x - bound_radius, 0, width - 1);
-			bound_min_y = clamp(bound_center_y - bound_radius, 0, height - 1);
-			bound_max_x = clamp(bound_center_x + bound_radius, 0, width - 1);
-			bound_max_y = clamp(bound_center_y + bound_radius, 0, height - 1);
-		}
-		else {
-			bound_min_x = 0;
-			bound_min_y = 0;
-			bound_max_x = width - 1;
-			bound_max_y = height - 1;
-		}
-		for (var i = bound_min_x; i <= bound_max_x; ++i) {
-			for (var j = bound_min_y; j <= bound_max_y; ++j) {
-				if (map_data[i][j] == 1) {
-					count++;
-				}
-			}
-		}
-		if (count === 0) return null;
-		var selection = random_int(count);
-		count = 0;
-		for (var i = bound_min_x; i <= bound_max_x; ++i) {
-			for (var j = bound_min_y; j <= bound_max_y; ++j) {
-				if (map_data[i][j] == 1) {
-					if (count === selection) {
-						return [i, j];
-					}
-					count++;
-				}
-			}
-		}
 	}
 	
 	function rgba_format(r, g, b, a) {
@@ -630,15 +742,22 @@ function start_game() {
 		
 		map_data = create_2d_array(world_width, world_height);
 		
-		trail_pool = SpritePool(game, bullet_pool_min_count, null, true);
+		spark_emitter = make_emitter(spark_lifespan, spark_scale, spark_speed, spark_drag);
+		flash_emitter = make_emitter(flash_lifespan, flash_scale, flash_speed, flash_drag);
+		
+		trail_pool = SpritePool(game, bullet_pool_min_count, null, false);
 		
 		player_ui_group = game.add.group();
+		
+		projectile_group = game.add.group();
+		projectile_group.enableBody = true;
+		projectile_group.physicsBodyType = Phaser.Physics.ARCADE;
 		
 		player_group = game.add.group();
 		player_group.enableBody = true;
 		player_group.physicsBodyType = Phaser.Physics.ARCADE;
-		player_list.push(Player('player1', player_keys[0], player_initial_angle[0], player_initial_force));
-		player_list.push(Player('player2', player_keys[1], player_initial_angle[1], player_initial_force));
+		player_list.push(Player('player1', player_keys[0], player_initial_angle[0], player_initial_force, player_texture_suffix[0]));
+		player_list.push(Player('player2', player_keys[1], player_initial_angle[1], player_initial_force, player_texture_suffix[1]));
 		
 		ui_group = game.add.group();
 		ui_group.fixedToCamera = true;
@@ -657,20 +776,20 @@ function start_game() {
 	var b3;
 	function game_start() {
 		
-		b1 = TetrisBlock(5, 5, tetris_blocks[0], 0);
-		b2 = TetrisBlock(15, 15, tetris_blocks[1], 0);
-		b3 = TetrisBlock(30, 34, tetris_blocks[2], 2);
-		
 		current_player = 0;
+		
+		turn_state = 'aiming';
+		
+		target_marks_left = 0;
+		target_marks = [];
+		
+		tetris_blocks = [];
 		
 		for (var i = 0; i < player_list.length; ++i) {
 			var player = player_list[i];
 			player.reset(player_starting_pos[i] * game.world.width, game.world.height - 100);
+			player.state = turn_state;
 		}
-		
-	}
-	
-	function fire_projectile(angle, force) {
 		
 	}
 	
@@ -691,10 +810,77 @@ function start_game() {
 		game.physics.arcade.collide(player_group);
 	}
 	
+	var target_marks_left = 0;
+	var target_marks = [];
+
+	function mark_target(tile_x) {
+		target_marks_left--;
+		target_marks.push(tile_x);
+		console.log('target marked: ', tile_x);
+	}
+	
+	function turn_logic() {
+		if (turn_state === 'moving') {
+			var ready = true;
+			for (var i = 0; i < tetris_blocks.length; ++i) {
+				if (!tetris_blocks[i].stopped) {
+					ready = false;
+					break;
+				}
+			}
+			
+			if (ready) {
+				turn_state = 'aiming';
+			}
+		}
+		else if (turn_state === 'aiming') {
+			var ready = true;
+			for (var i = 0; i < player_list.length; ++i) {
+				var player = player_list[i];
+				if (!player.ready) {
+					ready = false;
+					break;
+				}
+			}
+			
+			if (ready) {
+				for (var i = 0; i < player_list.length; ++i) {
+					var player = player_list[i];
+					player.launch_projectile();
+					target_marks_left++;
+				}
+				target_marks = [];
+				turn_state = 'waiting';
+			}
+		}
+		else if (turn_state === 'waiting') {
+			if (target_marks_left === 0) {
+				for (var i = 0; i < target_marks.length; i++) {
+					tetris_blocks.push(TetrisBlock(target_marks[i], 5, 0, 1, random_select_array(tetris_block_forms), 0));
+				}
+				turn_state = 'moving';
+			}
+		}
+		
+
+		for (var i = 0; i < player_list.length; ++i) {
+			var player = player_list[i];
+			player.state = turn_state;
+		}
+	}
+	
+	function update_tetris_blocks() {
+		for (var i = 0; i < tetris_blocks.length; ++i) {
+			tetris_blocks[i].update();
+		}
+	}
+	
 	function update() {
 		input_manager.update();
 		player_collision();
 		update_wind();
+		turn_logic();
+		update_tetris_blocks();
 		ui_update();
 	}
 	
