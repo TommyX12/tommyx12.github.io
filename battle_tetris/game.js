@@ -3,15 +3,15 @@
 		// - turn system
 		// - projectile aiming and launching
 		// - tetris block dropping
-		- row cancellation
 		// - game winning and losing
 		// - more progression and balancing - 40
 		
 		// - user interface - 30
-		- music - 15
-		- sound effect - 15
 	
 	LATER TODO:
+		- row cancellation
+		- music - 15
+		- sound effect - 15
 		- wind system for harder aiming
 		
 */

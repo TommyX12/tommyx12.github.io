@@ -5,24 +5,18 @@
 		// - weapon ring animation - 20
 		// - path finding - 60
 		// - enemies, objective, and progression - 45
-		- weapons randomly spawned pick-up with limited ammo and slots for use, Z to fire, C to swap - 30
-		- weapons:
-			- A - assault rifle - unlimited ammo - 15
-			- S - shotgun - 5
-			- I - sniper - 5
-			- D - dual missile - 30
-			- L - missile salvo - 5
-			- C - cluster missile - auto-target, ignore player target - 5
+		// - weapons randomly spawned pick-up with limited ammo and slots for use, Z to fire, C to swap - 30
+		// - weapons:
+			// - A - assault rifle - unlimited ammo - 15
+			// - S - shotgun - 5
+			// - I - sniper - 5
+			// - D - dual missile - 30
+			// - L - missile salvo - 5
+			// - C - cluster missile - auto-target, ignore player target - 5
 		
-		- abilities charged through kills, A,S,D to use - 15
-		- abilities:
-			- stop time with tile wave - 45
+		// - more progression and balancing - 40
 		
-		- more progression and balancing - 40
-		
-		- basic user interface - 30
-		- music - 15
-		- sound effect - 15
+		// - basic user interface - 30
 	
 	LATER TODO:
 		- mini map
@@ -33,7 +27,9 @@
 			- R - single rocket - 5
 			- M - mine
 		
+		- abilities charged through kills, A,S,D to use - 15
 		- abilities:
+			- stop time with tile wave - 45
 			- shock wave which also disables projectiles
 			- create cover of cool shape
 		
@@ -41,6 +37,8 @@
 		- user interface - 30
 			- show weapon recharge etc
 			
+		- music - 15
+		- sound effect - 15
 		
 */
 
@@ -1544,6 +1542,14 @@ function start_game() {
 		
 		var text_y = 22;
 		var text_size = 24;
+		
+		var ui_block = ui_group.create(0, 0, 'platform');
+		ui_block.width = game.width;
+		ui_block.height = 30;
+		ui_block.y = game.height - ui_block.height;
+		ui_block.tint = 0x000000;
+		ui_block.alpha = 0.5;
+		var help_text = game.add.bitmapText(170, game.height - 25, 'gem', 'Arrow Keys: Move, Z: Fire, X: Switch Target, C: Switch Weapon', text_size - 2, ui_group);
 		
 		current_weapon_icon_base = ui_group.create(35, 35, 'icon_base');
 		current_weapon_icon_base.anchor.set(0.5);
