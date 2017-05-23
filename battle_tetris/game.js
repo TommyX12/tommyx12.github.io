@@ -72,20 +72,70 @@ function start_game() {
 			min_y: min_y,
 			max_x: max_x,
 			max_y: max_y,
+			center_x: (min_x + max_x) / 2,
+			center_y: (min_y + max_y) / 2,
 		};
 	}
 	
-	function TetrisBlock(x, y, dx, dy, block_form, rotation) {
+	function TetrisBlockUI(block_form, block_rotation, color) {
+		var self = game.add.group(ui_group);
+		
+		for (var i = 0; i < 4; ++i) {
+			self.create(0, 0, 'tiles', 0);
+		}
+		
+		self.cycle_form = function () {
+			var new_rotation = self.block_rotation + 1;
+			if (new_rotation >= self.block_form.length) {
+				new_rotation = 0;
+			}
+			self.set_form(self.block_form, new_rotation, self.color);
+		}
+		
+		self.set_form = function (block_form, block_rotation, color) {
+			if (color === undefined) color = random_int(colors);
+			
+			self.color = color;
+			
+			self.block_form = block_form;
+			self.block_rotation = block_rotation;
+			self.current_form = block_form[block_rotation];
+			
+			self.form_data = get_tetris_form_min_max(self.current_form);
+			
+			for (var i = 0; i < 4; ++i) {
+				var tile = self.children[i];
+				tile.anchor.set(0.5);
+				tile.x = (self.current_form[i][0] - self.form_data.center_x) * world_tile_size;
+				tile.y = (self.current_form[i][1] - self.form_data.center_y) * world_tile_size;
+				
+				tile.loadTexture('tiles', color);
+			}
+		}
+		
+		self.spawn_tetris_block = function (x, y) {
+			return TetrisBlock(x, y, 0, 1, self.block_form, self.block_rotation, self.color);
+		}
+		
+		if (block_form !== undefined && block_rotation !== undefined && color !== undefined) {
+			self.set_form(block_form, block_rotation, color);
+		}
+		
+		return self;
+	}
+	
+	function TetrisBlock(x, y, dx, dy, block_form, block_rotation, color) {
 		var self = new Object();
 		
 		self.x = x;
 		self.y = y;
-		self.color = random_int(colors);
+		if (color === undefined) color = random_int(colors);
+		self.color = color;
 		
 		self.last_drawn_x = [null, null, null, null];
 		self.last_drawn_y = [null, null, null, null];
 		
-		self.move_delay = 0.2;
+		self.move_delay = 0.1;
 		self.move_delay_timer = 0.0;
 		
 		self.dx = dx;
@@ -101,21 +151,31 @@ function start_game() {
 				return false;
 			}
 			
+			for (var i = 0; i < 4; ++i) {
+				var current_x = self.current_form[i][0] + self.x;
+				var current_y = self.current_form[i][1] + self.y;
+				for (var j = 0; j < player_list.length; ++j) {
+					var player = player_list[j];
+					if (layer.getTileX(player.x) == current_x && layer.getTileY(player.y) == current_y) {
+						player.custom_kill();
+					}
+				}
+			}
+			
 			return true;
 		}
 		
-		self.set_form = function (block_form, rotation) {
+		self.set_form = function (block_form, block_rotation) {
 			
 			var old_block_form = self.block_form;
-			var old_rotation = self.rotation;
+			var old_rotation = self.block_rotation;
 
 			self.block_form = block_form;
-			self.rotation = rotation;
-			self.current_form = block_form[rotation];
+			self.block_rotation = block_rotation;
+			self.current_form = block_form[block_rotation];
 			self.form_data = get_tetris_form_min_max(self.current_form);
 			
 			self.x = clamp(self.x, -self.form_data.min_x, world_width - 1 - self.form_data.max_x);
-			self.y = clamp(self.y, -self.form_data.min_y, world_width - 1 - self.form_data.max_y);
 			
 			if (!self.redraw()) {
 				self.set_form(old_block_form, old_rotation);
@@ -123,7 +183,7 @@ function start_game() {
 		}
 		
 		self.cycle_form = function () {
-			var new_rotation = self.rotation + 1;
+			var new_rotation = self.block_rotation + 1;
 			if (new_rotation >= self.block_form.length) {
 				new_rotation = 0;
 			}
@@ -133,16 +193,20 @@ function start_game() {
 		self.redraw = function () {
 			for (var i = 0; i < 4; ++i) {
 				if (self.last_drawn_x[i] !== null) {
-					tilemap.removeTile(self.last_drawn_x[i], self.last_drawn_y[i], layer);
+					if (self.last_drawn_y[i] >= 0) {
+						tilemap.removeTile(self.last_drawn_x[i], self.last_drawn_y[i], layer);
+					}
 				}
 			}
 			for (var i = 0; i < 4; ++i) {
 				var current_x = self.current_form[i][0] + self.x;
 				var current_y = self.current_form[i][1] + self.y;
-				if (tilemap.getTile(current_x, current_y, layer) || !in_bounds(current_x, current_y, world_width, world_height)) {
+				if (tilemap.getTile(current_x, current_y, layer) || current_y >= world_height) {
 					return false;
 				}
-				tilemap.putTile(self.color, current_x, current_y, layer);
+				if (current_y >= 0) {
+					tilemap.putTile(self.color, current_x, current_y, layer);
+				}
 				self.last_drawn_x[i] = current_x;
 				self.last_drawn_y[i] = current_y;
 			}
@@ -150,7 +214,7 @@ function start_game() {
 			return true;
 		}
 		
-		self.set_form(block_form, rotation);
+		self.set_form(block_form, block_rotation);
 		
 		self.update = function () {
 			if (self.move_delay_timer >= self.move_delay) {
@@ -347,8 +411,10 @@ function start_game() {
 			rotate: Phaser.KeyCode.NUMPAD_1,
 		},
 	];
-	function Player(texture, keys, initial_angle, initial_force, texture_suffix) {
+	function Player(index, texture, keys, initial_angle, initial_force, texture_suffix) {
 		var self = player_group.create(0, 0, texture);
+		
+		self.index = index;
 		
 		self.arrow = player_ui_group.create(0, 0, 'arrow');
 		self.arrow.anchor.set(0.5);
@@ -400,7 +466,7 @@ function start_game() {
 		}
 		
 		self.launch_projectile = function () {
-			Projectile(self.x, self.y, self.aim_angle, self.aim_force, self.texture_suffix);
+			Projectile(self.x, self.y, self.aim_angle, self.aim_force, self.texture_suffix, self);
 			self.ready = false;
 		}
 		
@@ -414,6 +480,8 @@ function start_game() {
 		}
 		
 		self.update = function () {
+			if (!self.exists) return;
+			
 			self.on_floor = self.body.onFloor();
 			
 			if (self.ready) {
@@ -449,9 +517,10 @@ function start_game() {
 					}
 					if (input_manager.is_key_holding(self.keys.right)) {
 						self.aim_angle = clamp(self.aim_angle + player_angle_change * game.time.physicsElapsed, player_min_angle, player_max_angle);
+					// Vicky
 					}
 					if (input_manager.is_key_pressed_once(self.keys.rotate)) {
-						
+						ui_tetris_blocks[self.index].cycle_form();
 					}
 				}
 				if (input_manager.is_key_pressed_once(self.keys.fire)) {
@@ -471,11 +540,13 @@ function start_game() {
 		return self;
 	}
 	
-	function Projectile(x, y, angle, force, texture_suffix) {
+	function Projectile(x, y, angle, force, texture_suffix, host) {
 		var self = projectile_group.create(x, y, 'projectile' + texture_suffix);
 		
 		self.anchor.set(0.5);
 		self.scale.set(0.4, 0.5);
+		
+		self.host = host;
 		
 		self.texture_suffix = texture_suffix;
 		
@@ -496,7 +567,7 @@ function start_game() {
 		}
 		
 		self.on_collision = function () {
-			mark_target(layer.getTileX(self.x));
+			mark_target(layer.getTileX(self.x), self.host.index);
 
 			emit_particle(self.x, self.y, 4, spark_emitter, 'particle' + self.texture_suffix);
 			emit_particle(self.x, self.y, 1, flash_emitter, 'explosion' + self.texture_suffix);
@@ -517,7 +588,6 @@ function start_game() {
 
 	var game = new Phaser.Game(960, 720, Phaser.AUTO, 'game', { preload: preload, create: create, update: update});
 	
-	// Vicky
 	var cursors;
 	
 	var input_manager;
@@ -635,9 +705,9 @@ function start_game() {
 	}
 	
 	function in_world_bounds(x, y) {
-		return x >= 0 && x < game.world.width && y >= 0 && y <= game.world.height;
+		return x >= 0 && x < game.world.width && y >= 0 && y < game.world.height;
 	}
-
+	
 	function get_map_data(map_data, x, y, width, height) {
 		if (!in_bounds(x, y, width, height)) {
 			return 0;
@@ -720,6 +790,7 @@ function start_game() {
 		}
 
 		tilemap.addTilesetImage('tiles', bmd, tile_size, tile_size);
+		game.cache.addSpriteSheet('tiles', '', bmd.canvas, tile_size, tile_size);
 	}
 
 	function create() {
@@ -757,17 +828,24 @@ function start_game() {
 		player_group = game.add.group();
 		player_group.enableBody = true;
 		player_group.physicsBodyType = Phaser.Physics.ARCADE;
-		player_list.push(Player('player1', player_keys[0], player_initial_angle[0], player_initial_force, player_texture_suffix[0]));
-		player_list.push(Player('player2', player_keys[1], player_initial_angle[1], player_initial_force, player_texture_suffix[1]));
+		player_list.push(Player(0, 'player1', player_keys[0], player_initial_angle[0], player_initial_force, player_texture_suffix[0]));
+		player_list.push(Player(1, 'player2', player_keys[1], player_initial_angle[1], player_initial_force, player_texture_suffix[1]));
 		
 		ui_group = game.add.group();
 		ui_group.fixedToCamera = true;
 		
 		var ui_block = ui_group.create(0, 0, 'platform');
 		ui_block.width = game.width;
-		ui_block.height = 70;
+		ui_block.height = 100;
 		ui_block.tint = 0x000000;
 		ui_block.alpha = 0.5;
+		
+		ui_tetris_blocks.push(TetrisBlockUI());
+		ui_tetris_blocks[0].x = 50;
+		ui_tetris_blocks[0].y = 50;
+		ui_tetris_blocks.push(TetrisBlockUI());
+		ui_tetris_blocks[1].x = game.width - 50;
+		ui_tetris_blocks[1].y = 50;
 		
 		game_start();
 	}
@@ -792,6 +870,8 @@ function start_game() {
 			player.state = turn_state;
 		}
 		
+		generate_tetris_blocks();
+		
 	}
 	
 	function camera_follow(target, teleport) {
@@ -813,11 +893,18 @@ function start_game() {
 	
 	var target_marks_left = 0;
 	var target_marks = [];
+	var ui_tetris_blocks = [];
 
-	function mark_target(tile_x) {
+	function mark_target(tile_x, index) {
 		target_marks_left--;
-		target_marks.push(tile_x);
-		console.log('target marked: ', tile_x);
+		target_marks.push({tile_x: tile_x, index: index});
+		// console.log('target marked: ', tile_x);
+	}
+	
+	function generate_tetris_blocks() {
+		for (var i = 0; i < player_list.length; ++i) {
+			ui_tetris_blocks[i].set_form(random_select_array(tetris_block_forms), 0);
+		}
 	}
 	
 	function turn_logic() {
@@ -857,8 +944,10 @@ function start_game() {
 		else if (turn_state === 'waiting') {
 			if (target_marks_left === 0) {
 				for (var i = 0; i < target_marks.length; i++) {
-					tetris_blocks.push(TetrisBlock(target_marks[i], 5, 0, 1, random_select_array(tetris_block_forms), 0));
+					var target_mark = target_marks[i];
+					tetris_blocks.push(ui_tetris_blocks[target_mark.index].spawn_tetris_block(target_mark.tile_x, (-5 * i) - 5));
 				}
+				generate_tetris_blocks();
 				turn_state = 'moving';
 			}
 		}
