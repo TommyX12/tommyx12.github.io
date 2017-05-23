@@ -1,18 +1,17 @@
 /*
 	TODO:
-		- turn system
-		- projectile aiming and launching
-		- tetris block dropping
+		// - turn system
+		// - projectile aiming and launching
+		// - tetris block dropping
 		- row cancellation
-		- game winning and losing
-		- more progression and balancing - 40
+		// - game winning and losing
+		// - more progression and balancing - 40
 		
-		- user interface - 30
+		// - user interface - 30
 		- music - 15
 		- sound effect - 15
 	
 	LATER TODO:
-		- more interesting map with more tile type and more stuff
 		- wind system for harder aiming
 		
 */
@@ -77,8 +76,10 @@ function start_game() {
 		};
 	}
 	
-	function TetrisBlockUI(block_form, block_rotation, color) {
+	function TetrisBlockUI(index, block_form, block_rotation, color) {
 		var self = game.add.group(ui_group);
+		
+		self.index = index;
 		
 		for (var i = 0; i < 4; ++i) {
 			self.create(0, 0, 'tiles', 0);
@@ -114,7 +115,7 @@ function start_game() {
 		}
 		
 		self.spawn_tetris_block = function (x, y) {
-			return TetrisBlock(x, y, 0, 1, self.block_form, self.block_rotation, self.color);
+			return TetrisBlock(x, y, 0, 1, self.block_form, self.block_rotation, self.color, self.index);
 		}
 		
 		if (block_form !== undefined && block_rotation !== undefined && color !== undefined) {
@@ -124,8 +125,10 @@ function start_game() {
 		return self;
 	}
 	
-	function TetrisBlock(x, y, dx, dy, block_form, block_rotation, color) {
+	function TetrisBlock(x, y, dx, dy, block_form, block_rotation, color, index) {
 		var self = new Object();
+		
+		self.index = index;
 		
 		self.x = x;
 		self.y = y;
@@ -135,7 +138,7 @@ function start_game() {
 		self.last_drawn_x = [null, null, null, null];
 		self.last_drawn_y = [null, null, null, null];
 		
-		self.move_delay = 0.1;
+		self.move_delay = 0.05;
 		self.move_delay_timer = 0.0;
 		
 		self.dx = dx;
@@ -219,6 +222,17 @@ function start_game() {
 		self.update = function () {
 			if (self.move_delay_timer >= self.move_delay) {
 				if (!self.stopped && !self.move(self.dx, self.dy)){
+					var out_of_bound = false;
+					for (var i = 0; i < 4; ++i) {
+						var current_x = self.current_form[i][0] + self.x;
+						var current_y = self.current_form[i][1] + self.y;
+						if (current_y < 0) {
+							out_of_bound = true;
+						}
+					}
+					if (out_of_bound) {
+						player_list[self.index].custom_kill();
+					}
 					self.stopped = true;
 				}
 				self.move_delay_timer -= self.move_delay;
@@ -460,6 +474,8 @@ function start_game() {
 		}
 		
 		self.custom_kill = function () {
+			if (game_over) return;
+			game_over = true;
 			self.ready = false;
 			self.arrow.kill();
 			self.kill();
@@ -635,9 +651,10 @@ function start_game() {
 	var player_ui_group;
 	
 	var player_list = [];
-	var current_player = 0;
 	
 	var tetris_blocks = [];
+	
+	var game_over = false;
 	
 	function preload() {
 		game.load.image('platform', 'images/platform.png');
@@ -840,10 +857,28 @@ function start_game() {
 		ui_block.tint = 0x000000;
 		ui_block.alpha = 0.5;
 		
-		ui_tetris_blocks.push(TetrisBlockUI());
+		var text_y = 40;
+		var text_y2 = 20;
+		var text_size = 24;
+		var text_size2 = 16;
+		var text_h_offset = 150;
+		var text_h_offset2 = 260;
+		ui_player_texts.push(game.add.bitmapText(text_h_offset, text_y, 'gem', '', text_size, ui_group));
+		ui_player_texts[0].align = 'center';
+		ui_player_texts.push(game.add.bitmapText(game.width - 80 - text_h_offset, text_y, 'gem', '', text_size, ui_group));
+		ui_player_texts[1].align = 'center';
+		
+		var help_text = game.add.bitmapText(text_h_offset2, text_y2, 'gem', 'Player 1:\nW/S/A/D: Move/Aim\nF: Fire\nR: Rotate', text_size2, ui_group)
+		help_text.align = 'center';
+		help_text.tint = 0x88aaff;
+		var help_text = game.add.bitmapText(game.width - 160 - text_h_offset2, text_y2, 'gem', 'Player 2:\nArrow Keys: Move/Aim\nNumpad-0: Fire\nNumpad-1: Rotate', text_size2, ui_group)
+		help_text.align = 'center';
+		help_text.tint = 0xffaa88;
+		
+		ui_tetris_blocks.push(TetrisBlockUI(0));
 		ui_tetris_blocks[0].x = 50;
 		ui_tetris_blocks[0].y = 50;
-		ui_tetris_blocks.push(TetrisBlockUI());
+		ui_tetris_blocks.push(TetrisBlockUI(1));
 		ui_tetris_blocks[1].x = game.width - 50;
 		ui_tetris_blocks[1].y = 50;
 		
@@ -855,7 +890,13 @@ function start_game() {
 	var b3;
 	function game_start() {
 		
-		current_player = 0;
+		for (var x = 0; x < world_width; ++x) {
+			for (var y = 0; y < world_width; ++y) {
+				tilemap.removeTile(x, y, layer);
+			}
+		}
+		
+		game_over = false;
 		
 		turn_state = 'aiming';
 		
@@ -868,6 +909,8 @@ function start_game() {
 			var player = player_list[i];
 			player.reset(player_starting_pos[i] * game.world.width, game.world.height - 100);
 			player.state = turn_state;
+			player.aim_force = player_initial_force;
+			player.aim_angle = player_initial_angle[i];
 		}
 		
 		generate_tetris_blocks();
@@ -883,7 +926,60 @@ function start_game() {
 	}
 	
 	function ui_update() {
-		
+		if (game_over) {
+			for (var i = 0; i < player_list.length; ++i) {
+				var player = player_list[i];
+				
+				var text = '';
+				var tint = 0;
+				
+				if (player.exists) {
+					var text = 'SPACE\nRestart';
+					var tint = 0x00ff00;
+				}
+				else {
+					var text = 'Game\nOver';
+					var tint = 0xff0000;
+				}
+				
+				if (ui_player_texts[i].text !== text) {
+					ui_player_texts[i].text = text;
+					ui_player_texts[i].tint = tint;
+				}
+			}
+		}
+		else {
+			for (var i = 0; i < player_list.length; ++i) {
+				var player = player_list[i];
+				
+				var text = '';
+				var tint = 0;
+				
+				if (player.state === 'aiming') {
+					if (player.ready) {
+						text = 'READY';
+						tint = 0x00ff00;
+					}
+					else {
+						text = 'AIMING';
+						tint = 0xff4422;
+					}
+				}
+				else if (player.state === 'moving') {
+					text = 'MOVING';
+					tint = 0x4488ff;
+				}
+				else {
+					text = 'WAITING';
+					tint = 0xdddddd;
+				}
+				
+				if (ui_player_texts[i].text !== text) {
+					ui_player_texts[i].text = text;
+					ui_player_texts[i].tint = tint;
+				}
+			}
+		}
 	}
 	
 	function player_collision() {
@@ -894,6 +990,7 @@ function start_game() {
 	var target_marks_left = 0;
 	var target_marks = [];
 	var ui_tetris_blocks = [];
+	var ui_player_texts = [];
 
 	function mark_target(tile_x, index) {
 		target_marks_left--;
@@ -908,51 +1005,55 @@ function start_game() {
 	}
 	
 	function turn_logic() {
-		if (turn_state === 'moving') {
-			var ready = true;
-			for (var i = 0; i < tetris_blocks.length; ++i) {
-				if (!tetris_blocks[i].stopped) {
-					ready = false;
-					break;
-				}
-			}
-			
-			if (ready) {
-				turn_state = 'aiming';
-			}
+		if (game_over) {
+			turn_state = 'waiting';
 		}
-		else if (turn_state === 'aiming') {
-			var ready = true;
-			for (var i = 0; i < player_list.length; ++i) {
-				var player = player_list[i];
-				if (!player.ready) {
-					ready = false;
-					break;
+		else {
+			if (turn_state === 'moving') {
+				var ready = true;
+				for (var i = 0; i < tetris_blocks.length; ++i) {
+					if (!tetris_blocks[i].stopped) {
+						ready = false;
+						break;
+					}
+				}
+
+				if (ready) {
+					turn_state = 'aiming';
 				}
 			}
-			
-			if (ready) {
+			else if (turn_state === 'aiming') {
+				var ready = true;
 				for (var i = 0; i < player_list.length; ++i) {
 					var player = player_list[i];
-					player.launch_projectile();
-					target_marks_left++;
+					if (!player.ready) {
+						ready = false;
+						break;
+					}
 				}
-				target_marks = [];
-				turn_state = 'waiting';
+
+				if (ready) {
+					for (var i = 0; i < player_list.length; ++i) {
+						var player = player_list[i];
+						player.launch_projectile();
+						target_marks_left++;
+					}
+					target_marks = [];
+					turn_state = 'waiting';
+				}
 			}
-		}
-		else if (turn_state === 'waiting') {
-			if (target_marks_left === 0) {
-				for (var i = 0; i < target_marks.length; i++) {
-					var target_mark = target_marks[i];
-					tetris_blocks.push(ui_tetris_blocks[target_mark.index].spawn_tetris_block(target_mark.tile_x, (-5 * i) - 5));
+			else if (turn_state === 'waiting') {
+				if (target_marks_left === 0) {
+					for (var i = 0; i < target_marks.length; i++) {
+						var target_mark = target_marks[i];
+						tetris_blocks.push(ui_tetris_blocks[target_mark.index].spawn_tetris_block(target_mark.tile_x, (-5 * i) - 5));
+					}
+					generate_tetris_blocks();
+					turn_state = 'moving';
 				}
-				generate_tetris_blocks();
-				turn_state = 'moving';
 			}
 		}
 		
-
 		for (var i = 0; i < player_list.length; ++i) {
 			var player = player_list[i];
 			player.state = turn_state;
@@ -971,6 +1072,11 @@ function start_game() {
 		update_wind();
 		turn_logic();
 		update_tetris_blocks();
+		if (game_over) {
+			if (input_manager.is_key_pressed_once(Phaser.KeyCode.SPACEBAR)) {
+				game_start();
+			}
+		}
 		ui_update();
 	}
 	
