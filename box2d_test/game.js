@@ -18,25 +18,82 @@ function start_game() {
 		
 		var box2d_pixels_per_meter = 960 / 10;
 			
-		function box2d_enable_physics(sprite) {
+		function box2d_enable_physics(sprite, dynamic, x, y, width, height, rotation) {
+			var box2d_body = {
+				body: null,
+				
+				get_x: function () {
+					return box2d_body.body.GetPosition().get_x() * box2d_pixels_per_meter;
+				},
+				
+				get_y: function () {
+					return box2d_body.body.GetPosition().get_y() * box2d_pixels_per_meter;
+				},
+				
+				set_x: function (value) {
+					var position = box2d_body.body.GetPosition();
+					position.set_x(value / box2d_pixels_per_meter);
+					box2d_body.body.SetTransform(position, box2d_body.body.GetAngle());
+					return value;
+				},
+				
+				set_y: function (value) {
+					var position = box2d_body.body.GetPosition();
+					position.set_y(value / box2d_pixels_per_meter);
+					box2d_body.body.SetTransform(position, box2d_body.body.GetAngle());
+					return value;
+				},
+				
+				get_velocity_x: function () {
+					return box2d_body.body.GetLinearVelocity().get_x() * box2d_pixels_per_meter;
+				},
+				
+				get_velocity_y: function () {
+					return box2d_body.body.GetLinearVelocity().get_y() * box2d_pixels_per_meter;
+				},
+				
+				set_velocity_x: function (value) {
+					var velocity = box2d_body.body.GetLinearVelocity();
+					velocity.set_x(value / box2d_pixels_per_meter);
+					box2d_body.body.SetLinearVelocity(velocity);
+					return value;
+				},
+				
+				set_velocity_y: function (value) {
+					var velocity = box2d_body.body.GetLinearVelocity();
+					velocity.set_y(value / box2d_pixels_per_meter);
+					box2d_body.body.SetLinearVelocity(velocity);
+					return value;
+				},
+				
+				set_collision: function (value) {
+					box2d_body.body.GetFixtureList().SetSensor(!value);
+					return value;
+				},
+				
+				update: function () {
+					var position = box2d_body.body.GetPosition();
+					var angle = box2d_body.body.GetAngle();
+					sprite.x = position.get_x() * box2d_pixels_per_meter;
+					sprite.y = position.get_y() * box2d_pixels_per_meter;
+					sprite.angle = deg(angle);
+				},
+				
+				destroy: function () {
+					
+				},
+			};
 			
-		}
-			
-		function Box2D_Sprite(phaser_sprite, dynamic, x, y, width, height, rotation) {
-			var self = phaser_sprite;
-			
-			self.anchor.set(0.5);
-			self.width = width;
-			self.height = height;
-			self.angle = rotation;
-			
-			self.tint = random_int(0xffffff);
+			sprite.anchor.set(0.5);
+			sprite.width = width;
+			sprite.height = height;
+			sprite.angle = rotation;
 			
 			var body_def = new Box2D.b2BodyDef();
 			if (dynamic) body_def.set_type(Box2D.b2_dynamicBody);
 			body_def.get_position().Set(x / box2d_pixels_per_meter, y / box2d_pixels_per_meter);
 			body_def.set_angle(rad(rotation));
-			self.box2d_body = box2d_world.CreateBody(body_def);
+			box2d_body.body = box2d_world.CreateBody(body_def);
 			
 			var box = new Box2D.b2PolygonShape();
 			box.SetAsBox(width / 2 / box2d_pixels_per_meter, height / 2 / box2d_pixels_per_meter);
@@ -47,20 +104,16 @@ function start_game() {
 			fixture_def.set_friction(0.3);
 			fixture_def.set_restitution(0.5);
 			
-			self.box2d_body.CreateFixture(fixture_def);
+			box2d_body.body.CreateFixture(fixture_def);
 			
-			self.update = function () {
-				var position = self.box2d_body.GetPosition();
-				var angle = self.box2d_body.GetAngle();
-				self.x = position.get_x() * box2d_pixels_per_meter;
-				self.y = position.get_y() * box2d_pixels_per_meter;
-				self.angle = deg(angle);
+			sprite.box2d_body = box2d_body;
+			sprite.box2d_body.update();
+			
+			sprite.update = function () {
+				sprite.box2d_body.update();
 			}
-			self.update();
-			
-			return self;
 		}
-		
+			
 		function preload() {
 			game.load.image('block', 'images/block.png');
 			game.load.image('circle', 'images/circle.png');
@@ -87,10 +140,10 @@ function start_game() {
 			// box2d_world.SetAllowSleeping(false);
 			
 			var sprite = game.add.sprite(0, 0, 'block');
-			var ground_sprite = Box2D_Sprite(sprite, false, game.world.width / 2, game.world.height, game.world.width, 20, 0);
+			box2d_enable_physics(sprite, false, game.world.width / 2, game.world.height, game.world.width, 20, 0);
 			
 			var sprite = game.add.sprite(0, 0, 'block');
-			test_sprite = Box2D_Sprite(sprite, true, 50, 50, 20, 20, 0);
+			box2d_enable_physics(sprite, true, 50, 50, 20, 20, 0);
 			
 			game_start();
 		}
@@ -113,7 +166,11 @@ function start_game() {
 			box2d_update();
 			if (input_manager.is_mouse_pressed_once()) {
 				var sprite = game.add.sprite(0, 0, 'block');
-				test_sprite = Box2D_Sprite(sprite, true, game.input.activePointer.x, game.input.activePointer.y, random_range(10, 60), random_range(10, 60), random_range(0, 360));
+				box2d_enable_physics(sprite, true, game.input.activePointer.x, game.input.activePointer.y, random_range(10, 60), random_range(10, 60), random_range(0, 360));
+				console.log(sprite.box2d_body.body);
+				sprite.box2d_body.set_velocity_x(random_range(-500, 500));
+				sprite.box2d_body.set_velocity_y(random_range(-500, 500));
+				sprite.box2d_body.set_collision(false);
 			}
 		}
 	});
