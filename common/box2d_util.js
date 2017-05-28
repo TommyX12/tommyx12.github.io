@@ -138,6 +138,8 @@ function enable_box2d(sprite, x, y, width, height, dynamic, density, friction, b
 	sprite.box2d_body = box2d_body;
 	sprite.box2d_body.update();
 	
+	sprite.events.onDestroy.add(box2d_body.destroy, this);
+	
 	sprite.update = function () {
 		sprite.box2d_body.update();
 	}
