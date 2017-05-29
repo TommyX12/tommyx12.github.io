@@ -55,8 +55,18 @@ function start_game() {
 			if (input_manager.is_mouse_pressed_once()) {
 				var sprite = game.add.sprite(0, 0, 'block');
 				enable_box2d(sprite, game.input.activePointer.x, game.input.activePointer.y, random_range(10, 60), random_range(10, 60), true);
+				// sprite.box2d_body.set_angle(random_range(0, 360));
+				// console.log(sprite.box2d_body.body);
+				// sprite.box2d_body.set_velocity_x(random_range(-500, 500));
+				// sprite.box2d_body.set_velocity_y(random_range(-500, 500));
+				// sprite.box2d_body.set_collision(false);
+			}
+			if (input_manager.is_any_key_pressed_once()) {
+				var sprite = game.add.sprite(0, 0, 'block');
+				enable_box2d(sprite, game.input.activePointer.x, game.input.activePointer.y, random_range(10, 60), random_range(10, 60), true);
 				sprite.box2d_body.set_angle(random_range(0, 360));
-				console.log(sprite.box2d_body.body);
+				sprite.tint = random_int(0xffffff);
+				// console.log(sprite.box2d_body.body);
 				sprite.box2d_body.set_velocity_x(random_range(-500, 500));
 				sprite.box2d_body.set_velocity_y(random_range(-500, 500));
 				// sprite.box2d_body.set_collision(false);
