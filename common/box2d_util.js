@@ -95,7 +95,7 @@ function enable_box2d(sprite, x, y, width, height, dynamic, density, friction, b
 		
 		test_point: function (x, y) {
 			return box2d_body.body.GetFixtureList().TestPoint(new box2d_module.b2Vec2(to_meter(x), to_meter(y)));
-		}
+		},
 		
 		get_angle: function (value) {
 			return deg(box2d_body.body.GetAngle());
