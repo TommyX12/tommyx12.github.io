@@ -21,8 +21,9 @@ set gdefault " use the `g` flag by default.
 
 set number
 
-set spell spelllang=en_us
+" set spell spelllang=en_us
 
+noremap <C-c> "*y
 inoremap jk <space><backspace><esc>
 inoremap jp <C-p>
 inoremap j[ <C-x><C-p>
