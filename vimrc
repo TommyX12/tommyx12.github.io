@@ -405,6 +405,7 @@ autocmd InsertEnter * silent! exec "norm! " . line(".") . "G" . col(".") . "|"
 
 " bindings for easy split navigation
 nnoremap <C-h> <C-w>h
+nnoremap <del> <C-w>h
 nnoremap <C-j> <C-w>j
 nnoremap <C-k> <C-w>k
 nnoremap <C-l> <C-w>l
