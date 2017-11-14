@@ -3,7 +3,7 @@ set nocompatible
 filetype plugin indent on
 syntax on
 
-colorscheme desert
+colorscheme slate
 set background=dark
 
 autocmd VimEnter * match Opeartor "[^a-zA-Z0-9\t ]"
