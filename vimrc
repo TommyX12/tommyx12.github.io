@@ -7,7 +7,7 @@ colorscheme desert
 set background=dark
 
 autocmd VimEnter * match Opeartor "[^a-zA-Z0-9\t ]"
-autocmd WinNew * match Opeartor "[^a-zA-Z0-9\t ]"
+autocmd WinEnter * match Opeartor "[^a-zA-Z0-9\t ]"
 
 let mapleader = ","
 
