@@ -6,8 +6,8 @@ syntax on
 colorscheme desert
 set background=dark
 
-autocmd VimEnter * match NonWord "[^a-zA-Z0-9\t ]"
-autocmd WinNew * match NonWord "[^a-zA-Z0-9\t ]"
+autocmd VimEnter * match Opeartor "[^a-zA-Z0-9\t ]"
+autocmd WinNew * match Opeartor "[^a-zA-Z0-9\t ]"
 
 let mapleader = ","
 
