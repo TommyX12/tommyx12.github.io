@@ -56,9 +56,44 @@ var HomePage = (function () {
     function HomePage(navCtrl) {
         this.navCtrl = navCtrl;
         this.music_on = true;
-        this.current_node = {
-            html: 'Thing<br>hello world!<br> Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. '
+        this.nodes = {
+            start: {
+                html: 'Thing<br>hello world!<br> Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. ',
+                options: [
+                    {
+                        html: 'do this please',
+                        next: 'some1'
+                    },
+                    {
+                        html: 'do that please',
+                        next: 'some2'
+                    },
+                ]
+            },
+            some1: {
+                html: 'asdf',
+                options: [
+                    {
+                        html: 'do this ',
+                        next: 'start'
+                    },
+                    {
+                        html: 'do that lorem',
+                        next: 'some2'
+                    },
+                ]
+            },
+            some2: {
+                html: 'asrewer',
+                options: [
+                    {
+                        html: 'do this please',
+                        next: 'start'
+                    },
+                ]
+            },
         };
+        this.current_node = this.nodes.start;
     }
     HomePage.prototype.toggle_music = function () {
         if (this.music_on) {
@@ -70,18 +105,20 @@ var HomePage = (function () {
             this.music_on = true;
         }
     };
+    HomePage.prototype.change_node = function (node_name) {
+        this.current_node = this.nodes[node_name];
+    };
     __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_8" /* ViewChild */])('music'),
         __metadata("design:type", Object)
     ], HomePage.prototype, "music", void 0);
     HomePage = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({
-            selector: 'page-home',template:/*ion-inline-start:"D:\data\projects\new\creations\2018 Dialog\dialog\src\pages\home\home.html"*/'<!-- <audio #music autoplay loop src="assets/music/bgm.mp3"></audio> -->\n\n<ion-header>\n  <ion-navbar>\n    <ion-title>\n    <ion-icon color="primary" name="heart"></ion-icon>\n    </ion-title>\n    <ion-buttons right>\n      <button icon-only (click)="toggle_music()">\n        <ion-icon [color]="music_on ? \'secondary\' : \'danger\'" name="musical-notes"></ion-icon>\n      </button>\n    </ion-buttons>\n  </ion-navbar>\n</ion-header>\n\n<ion-content padding>\n  <p text-center [innerHTML]="current_node.html">\n  Thing\n  <br>\n  Fucker asdfpoaisjdpfoiajspdi\n  </p>\n</ion-content>\n  \n<ion-footer>\n  <ion-toolbar>\n    <button ion-button block>\n      Test\n    </button>\n    <button ion-button block>\n      Test\n    </button>\n    <button ion-button block>\n      Test\n    </button>\n    <button ion-button block>\n      Test\n    </button>\n    <button ion-button block>\n      Test\n    </button>\n    <button ion-button block>\n      Test\n    </button>\n  </ion-toolbar>\n</ion-footer>\n'/*ion-inline-end:"D:\data\projects\new\creations\2018 Dialog\dialog\src\pages\home\home.html"*/
+            selector: 'page-home',template:/*ion-inline-start:"D:\data\projects\new\creations\2018 Dialog\dialog\src\pages\home\home.html"*/'<audio #music autoplay loop src="assets/music/bgm.mp3"></audio>\n\n<ion-header>\n  <ion-navbar>\n    <ion-title>\n    <ion-icon color="primary" name="heart"></ion-icon>\n    </ion-title>\n    <ion-buttons right>\n      <button icon-only (click)="toggle_music()">\n        <ion-icon [color]="music_on ? \'secondary\' : \'danger\'" name="musical-notes"></ion-icon>\n      </button>\n    </ion-buttons>\n  </ion-navbar>\n</ion-header>\n\n<ion-content padding>\n  <p text-center [innerHTML]="current_node.html">\n  </p>\n</ion-content>\n  \n<ion-footer>\n  <ion-toolbar>\n    <button ion-button block *ngFor="let option of current_node.options" (click)="change_node(option.next)" [innerHTML]="option.html">\n    </button>\n  </ion-toolbar>\n</ion-footer>\n'/*ion-inline-end:"D:\data\projects\new\creations\2018 Dialog\dialog\src\pages\home\home.html"*/
         }),
-        __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["d" /* NavController */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["d" /* NavController */]) === "function" && _a || Object])
+        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["d" /* NavController */]])
     ], HomePage);
     return HomePage;
-    var _a;
 }());
 
 //# sourceMappingURL=home.js.map
