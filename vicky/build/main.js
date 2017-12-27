@@ -58,14 +58,16 @@ var HomePage = (function () {
         this.music_on = true;
         this.nodes = {
             start: {
-                html: 'Thing<br>hello world!<br> Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. ',
+                html: "\n\u6211\u53EA\u662F\u770B\u770B\u4E2D\u6587\u80FD\u4E0D\u80FD\u6253\u51FA\u6765~\n<br>\u987A\u4FBF\u8BD5\u8BD5\u6362\u884C\n",
                 options: [
                     {
-                        html: 'do this please',
+                        html: '你有毒吧',
+                        color: 'primary',
                         next: 'some1'
                     },
                     {
                         html: 'do that please',
+                        color: 'danger',
                         next: 'some2'
                     },
                 ]
@@ -75,10 +77,12 @@ var HomePage = (function () {
                 options: [
                     {
                         html: 'do this ',
+                        color: 'primary',
                         next: 'start'
                     },
                     {
                         html: 'do that lorem',
+                        color: 'primary',
                         next: 'some2'
                     },
                 ]
@@ -88,6 +92,7 @@ var HomePage = (function () {
                 options: [
                     {
                         html: 'do this please',
+                        color: 'primary',
                         next: 'start'
                     },
                 ]
@@ -114,11 +119,12 @@ var HomePage = (function () {
     ], HomePage.prototype, "music", void 0);
     HomePage = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({
-            selector: 'page-home',template:/*ion-inline-start:"D:\data\projects\new\creations\2018 Dialog\dialog\src\pages\home\home.html"*/'<audio #music autoplay loop src="assets/music/bgm.mp3"></audio>\n\n<ion-header>\n  <ion-navbar>\n    <ion-title>\n    <ion-icon color="primary" name="heart"></ion-icon>\n    </ion-title>\n    <ion-buttons right>\n      <button icon-only (click)="toggle_music()">\n        <ion-icon [color]="music_on ? \'secondary\' : \'danger\'" name="musical-notes"></ion-icon>\n      </button>\n    </ion-buttons>\n  </ion-navbar>\n</ion-header>\n\n<ion-content padding>\n  <p text-center [innerHTML]="current_node.html">\n  </p>\n</ion-content>\n  \n<ion-footer>\n  <ion-toolbar>\n    <button ion-button block *ngFor="let option of current_node.options" (click)="change_node(option.next)" [innerHTML]="option.html">\n    </button>\n  </ion-toolbar>\n</ion-footer>\n'/*ion-inline-end:"D:\data\projects\new\creations\2018 Dialog\dialog\src\pages\home\home.html"*/
+            selector: 'page-home',template:/*ion-inline-start:"D:\data\projects\new\creations\2018 Dialog\dialog\src\pages\home\home.html"*/'<audio #music autoplay loop src="assets/music/bgm.mp3"></audio>\n\n<ion-header>\n  <ion-navbar>\n    <ion-title>\n    <ion-icon color="primary" name="heart"></ion-icon>\n    </ion-title>\n    <ion-buttons right>\n      <button icon-only (click)="toggle_music()">\n        <ion-icon [color]="music_on ? \'secondary\' : \'danger\'" name="musical-notes"></ion-icon>\n      </button>\n    </ion-buttons>\n  </ion-navbar>\n</ion-header>\n\n<ion-content padding>\n  <p text-center [innerHTML]="current_node.html">\n  </p>\n</ion-content>\n  \n<ion-footer>\n  <ion-toolbar>\n    <button ion-button block [color]="option.color" *ngFor="let option of current_node.options" (click)="change_node(option.next)" [innerHTML]="option.html">\n    </button>\n  </ion-toolbar>\n</ion-footer>\n'/*ion-inline-end:"D:\data\projects\new\creations\2018 Dialog\dialog\src\pages\home\home.html"*/
         }),
-        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["d" /* NavController */]])
+        __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["d" /* NavController */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["d" /* NavController */]) === "function" && _a || Object])
     ], HomePage);
     return HomePage;
+    var _a;
 }());
 
 //# sourceMappingURL=home.js.map
