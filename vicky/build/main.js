@@ -260,6 +260,9 @@ var HomePage = (function () {
     };
     HomePage.prototype.change_node = function (node_name) {
         this.current_node = this.nodes[node_name];
+        if (this.music_on) {
+            this.music.nativeElement.play();
+        }
     };
     __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_8" /* ViewChild */])('music'),
