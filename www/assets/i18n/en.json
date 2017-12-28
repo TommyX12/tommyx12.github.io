@@ -4,8 +4,12 @@
   "TITLE_MISSIONS": "Missions",
   "TITLE_MORE": "More",
   
+  "TITLE_ACTIONS": "Actions",
+  
   "TEXT_LOADING": "Loading...",
   "TEXT_SAVING": "Saving...",
+  
+  "ROOT_ACTION_NAME": "Actions",
   
   
   "BACK_BUTTON_TEXT": "Back",
