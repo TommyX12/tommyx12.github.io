@@ -5,16 +5,43 @@
   "TITLE_MORE": "More",
   
   "TITLE_ACTIONS": "Actions",
+  "TITLE_ACTION_EDITOR": "Edit Action",
+  "TITLE_ACTION_EDITOR_NEW": "New Action",
+  
+  "TITLE_SELECT_PARENT": "Select Parent",
   
   "TEXT_LOADING": "Loading...",
   "TEXT_SAVING": "Saving...",
   
   "ROOT_ACTION_NAME": "Top Level",
   
+  "ENTER": "Enter",
+  "SAVE": "Save",
+  
+  "NAME": "Name",
+  "PARENT": "Parent",
+  "NAME_PLACEHOLDER": "Enter name",
+
   
   "BACK_BUTTON_TEXT": "Back",
+  
+  "ERROR": "Error",
+  "ERROR_EMPTY_NAME": "Name cannot be empty.",
+  "OK": "OK",
+  
+  "ERROR_CANNOT_SELECT_ACTION": "This action cannot be selected.",
+  
+  "ARE_YOU_SURE": "Are you sure?",
+  "PRESERVE_CHILDREN": "Preserve Children",
+  "DELETE_CHILDREN": "Delete Children",
+  "PRESERVE_CHILDREN_MSG": "All children will be moved up one level.",
+  "DELETE_CHILDREN_MSG": "All children will also be deleted.",
+  
+  "DELETE": "Delete",
+  "CANCEL": "Cancel",
+  "YES": "Yes",
+  
 
-  "NAME": "Name",
   "EMAIL": "Email",
   "USERNAME": "Username",
   "PASSWORD": "Password",
@@ -66,9 +93,6 @@
 
   "ITEM_CREATE_TITLE": "New Item",
   "ITEM_CREATE_CHOOSE_IMAGE": "Add Image",
-
-  "ITEM_NAME_PLACEHOLDER": "Name",
-  "ITEM_ABOUT_PLACEHOLDER": "About",
 
   "DONE_BUTTON": "Done",
   "CANCEL_BUTTON": "Cancel",
