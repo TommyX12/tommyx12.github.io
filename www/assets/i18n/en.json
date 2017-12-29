@@ -1,6 +1,7 @@
 {
   "TITLE_TIMELINE": "Timeline",
   "TITLE_STATS": "Stats",
+  "TITLE_TASK": "Tasks",
   "TITLE_MISSIONS": "Missions",
   "TITLE_MORE": "More",
   
@@ -20,6 +21,7 @@
   
   "NAME": "Name",
   "PARENT": "Parent",
+  "ID": "ID",
   "NAME_PLACEHOLDER": "Enter name",
   
   "BACK_BUTTON_TEXT": "Back",
