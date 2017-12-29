@@ -322,14 +322,16 @@ Object(__WEBPACK_IMPORTED_MODULE_0__angular_platform_browser_dynamic__["a" /* pl
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__mocks_providers_items__ = __webpack_require__(187);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__providers_providers__ = __webpack_require__(59);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__app_component__ = __webpack_require__(331);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__components_components__ = __webpack_require__(34);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14__models_models__ = __webpack_require__(14);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__common_common__ = __webpack_require__(58);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14__components_components__ = __webpack_require__(34);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_15__models_models__ = __webpack_require__(14);
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+
 
 
 
@@ -374,11 +376,12 @@ var AppModule = (function () {
             declarations: [
                 __WEBPACK_IMPORTED_MODULE_12__app_component__["a" /* MyApp */],
                 // components registration
-                __WEBPACK_IMPORTED_MODULE_13__components_components__["d" /* TabsComp */],
-                __WEBPACK_IMPORTED_MODULE_13__components_components__["e" /* TimelinePageComp */],
-                __WEBPACK_IMPORTED_MODULE_13__components_components__["c" /* MissionsPageComp */],
-                __WEBPACK_IMPORTED_MODULE_13__components_components__["b" /* ActionsBrowserComp */],
-                __WEBPACK_IMPORTED_MODULE_13__components_components__["a" /* ActionEditorComp */],
+                __WEBPACK_IMPORTED_MODULE_14__components_components__["d" /* TabsComp */],
+                __WEBPACK_IMPORTED_MODULE_14__components_components__["e" /* TimelinePageComp */],
+                __WEBPACK_IMPORTED_MODULE_14__components_components__["c" /* MissionsPageComp */],
+                __WEBPACK_IMPORTED_MODULE_14__components_components__["b" /* ActionsBrowserComp */],
+                __WEBPACK_IMPORTED_MODULE_14__components_components__["a" /* ActionEditorComp */],
+                __WEBPACK_IMPORTED_MODULE_13__common_common__["b" /* AutosizeDirective */],
             ],
             imports: [
                 __WEBPACK_IMPORTED_MODULE_2__angular_platform_browser__["a" /* BrowserModule */],
@@ -413,11 +416,11 @@ var AppModule = (function () {
             entryComponents: [
                 __WEBPACK_IMPORTED_MODULE_12__app_component__["a" /* MyApp */],
                 // entry components registration
-                __WEBPACK_IMPORTED_MODULE_13__components_components__["d" /* TabsComp */],
-                __WEBPACK_IMPORTED_MODULE_13__components_components__["e" /* TimelinePageComp */],
-                __WEBPACK_IMPORTED_MODULE_13__components_components__["c" /* MissionsPageComp */],
-                __WEBPACK_IMPORTED_MODULE_13__components_components__["b" /* ActionsBrowserComp */],
-                __WEBPACK_IMPORTED_MODULE_13__components_components__["a" /* ActionEditorComp */],
+                __WEBPACK_IMPORTED_MODULE_14__components_components__["d" /* TabsComp */],
+                __WEBPACK_IMPORTED_MODULE_14__components_components__["e" /* TimelinePageComp */],
+                __WEBPACK_IMPORTED_MODULE_14__components_components__["c" /* MissionsPageComp */],
+                __WEBPACK_IMPORTED_MODULE_14__components_components__["b" /* ActionsBrowserComp */],
+                __WEBPACK_IMPORTED_MODULE_14__components_components__["a" /* ActionEditorComp */],
             ],
             providers: [
                 __WEBPACK_IMPORTED_MODULE_11__providers_providers__["a" /* Api */],
@@ -430,14 +433,14 @@ var AppModule = (function () {
                 // Keep this to enable Ionic's runtime error handling during development
                 { provide: __WEBPACK_IMPORTED_MODULE_1__angular_core__["u" /* ErrorHandler */], useClass: __WEBPACK_IMPORTED_MODULE_9_ionic_angular__["e" /* IonicErrorHandler */] },
                 // model registration
-                __WEBPACK_IMPORTED_MODULE_14__models_models__["b" /* Global */],
-                __WEBPACK_IMPORTED_MODULE_14__models_models__["f" /* StorageManager */],
-                __WEBPACK_IMPORTED_MODULE_14__models_models__["g" /* TaskData */],
-                __WEBPACK_IMPORTED_MODULE_14__models_models__["h" /* TimelineData */],
-                __WEBPACK_IMPORTED_MODULE_14__models_models__["e" /* Statistics */],
-                __WEBPACK_IMPORTED_MODULE_14__models_models__["c" /* RewardSystem */],
-                __WEBPACK_IMPORTED_MODULE_14__models_models__["d" /* Scheduler */],
-                __WEBPACK_IMPORTED_MODULE_14__models_models__["a" /* Driver */],
+                __WEBPACK_IMPORTED_MODULE_15__models_models__["b" /* Global */],
+                __WEBPACK_IMPORTED_MODULE_15__models_models__["f" /* StorageManager */],
+                __WEBPACK_IMPORTED_MODULE_15__models_models__["g" /* TaskData */],
+                __WEBPACK_IMPORTED_MODULE_15__models_models__["h" /* TimelineData */],
+                __WEBPACK_IMPORTED_MODULE_15__models_models__["e" /* Statistics */],
+                __WEBPACK_IMPORTED_MODULE_15__models_models__["c" /* RewardSystem */],
+                __WEBPACK_IMPORTED_MODULE_15__models_models__["d" /* Scheduler */],
+                __WEBPACK_IMPORTED_MODULE_15__models_models__["a" /* Driver */],
             ]
         })
     ], AppModule);
@@ -975,7 +978,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var TaskData = (function () {
     function TaskData(global) {
         this.global = global;
-        this.changed = new __WEBPACK_IMPORTED_MODULE_2__common_common__["b" /* Event */]();
+        this.changed = new __WEBPACK_IMPORTED_MODULE_2__common_common__["c" /* Event */]();
         this.actions = {};
         var self = this;
         this.initialize();
@@ -987,11 +990,11 @@ var TaskData = (function () {
         var action = new __WEBPACK_IMPORTED_MODULE_2__common_common__["a" /* Action */]();
         action.id = 0;
         this.actions[0] = action;
-        var action_edit;
-        action_edit = this.get_new_action_edit();
-        action_edit.parent_action_id = 0;
-        action_edit.name = "test thing 1";
-        this.apply_new_action_edit(action_edit);
+        // let action_edit: ActionEditData
+        // action_edit = this.get_new_action_edit()
+        // action_edit.parent_action_id = 0
+        // action_edit.name = "test thing 1"
+        // this.apply_new_action_edit(action_edit)
         // or load data.
     };
     TaskData.prototype.set_root_action_name = function () {
@@ -1058,7 +1061,7 @@ var TaskData = (function () {
                 this.get_action(action.parent_action_id).child_action_ids.push(child);
             }
         }
-        __WEBPACK_IMPORTED_MODULE_2__common_common__["c" /* Util */].array_remove(this.get_action(action.parent_action_id).child_action_ids, id);
+        __WEBPACK_IMPORTED_MODULE_2__common_common__["d" /* Util */].array_remove(this.get_action(action.parent_action_id).child_action_ids, id);
         delete this.actions[id];
         this.changed.dispatch(null);
     };
@@ -1068,7 +1071,7 @@ var TaskData = (function () {
     TaskData.prototype.apply_action_edit = function (data) {
         var action = this.get_action(data.id);
         // move node
-        __WEBPACK_IMPORTED_MODULE_2__common_common__["c" /* Util */].array_remove(this.get_action(action.parent_action_id).child_action_ids, data.id);
+        __WEBPACK_IMPORTED_MODULE_2__common_common__["d" /* Util */].array_remove(this.get_action(action.parent_action_id).child_action_ids, data.id);
         this.get_action(data.parent_action_id).child_action_ids.push(data.id);
         action.deserialize(data);
         this.changed.dispatch(null);
@@ -1365,6 +1368,7 @@ var Action = (function () {
     function Action() {
         this.id = 0;
         this.name = '';
+        this.note = '';
         this.parent_action_id = 0;
         this.child_action_ids = [];
     }
@@ -1373,6 +1377,7 @@ var Action = (function () {
         return {
             id: this.id,
             name: this.name,
+            note: this.note,
             parent_action_id: this.parent_action_id,
             child_action_ids: this.child_action_ids.slice(),
         };
@@ -1381,6 +1386,7 @@ var Action = (function () {
     Action.prototype.deserialize = function (data) {
         this.id = data.id;
         this.name = data.name;
+        this.note = data.note;
         this.parent_action_id = data.parent_action_id;
         this.child_action_ids = data.child_action_ids.slice();
     };
@@ -1452,7 +1458,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var TimelineData = (function () {
     function TimelineData(global) {
         this.global = global;
-        this.changed = new __WEBPACK_IMPORTED_MODULE_2__common_common__["b" /* Event */]();
+        this.changed = new __WEBPACK_IMPORTED_MODULE_2__common_common__["c" /* Event */]();
     }
     TimelineData = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["A" /* Injectable */])(),
@@ -1488,7 +1494,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var Statistics = (function () {
     function Statistics(global) {
         this.global = global;
-        this.changed = new __WEBPACK_IMPORTED_MODULE_2__common_common__["b" /* Event */]();
+        this.changed = new __WEBPACK_IMPORTED_MODULE_2__common_common__["c" /* Event */]();
     }
     Statistics = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["A" /* Injectable */])(),
@@ -1524,7 +1530,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var RewardSystem = (function () {
     function RewardSystem(global) {
         this.global = global;
-        this.changed = new __WEBPACK_IMPORTED_MODULE_2__common_common__["b" /* Event */]();
+        this.changed = new __WEBPACK_IMPORTED_MODULE_2__common_common__["c" /* Event */]();
     }
     RewardSystem = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["A" /* Injectable */])(),
@@ -1772,7 +1778,7 @@ var ActionsBrowserComp = (function () {
                     role: 'destructive',
                     handler: function () {
                         var action_sheet = self.as_ctrl.create({
-                            title: self.global.tr.DELETE,
+                            title: self.task_data.get_action(id).name,
                             buttons: [
                                 {
                                     text: self.global.tr.DELETE_CHILDREN,
@@ -1823,7 +1829,7 @@ var ActionsBrowserComp = (function () {
                                     role: 'cancel',
                                 },
                             ]
-                        }).present();
+                        });
                     }
                 },
                 {
@@ -1834,9 +1840,6 @@ var ActionsBrowserComp = (function () {
         }).present();
     };
     ActionsBrowserComp.prototype.select_item = function (id) {
-        if (!this.is_selector && id == this.current_action.id) {
-            return;
-        }
         if (id == this.blocked_id) {
             this.alert_ctrl.create({
                 title: this.global.tr.ERROR,
@@ -1875,10 +1878,17 @@ var ActionsBrowserComp = (function () {
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({
             selector: 'comp-actions-browser',template:/*ion-inline-start:"D:\data\projects\new\creations\2018 Catalyzer\catalyzer\src\components\actions-browser\actions-browser.html"*/'<ion-header>\n  <ion-navbar>\n    <ion-buttons left>\n      <button ion-button [hidden]="!is_selector" (click)="close()" icon-only>\n        <ion-icon name="close"></ion-icon>\n      </button>\n    </ion-buttons>\n    <ion-title>\n      {{(title ? title : \'TITLE_ACTIONS\') | translate}}\n    </ion-title>\n    <ion-buttons right>\n    </ion-buttons>\n  </ion-navbar>\n  <ion-toolbar style="border-top: 1px solid #aaa;">\n    <ion-buttons left>\n      <button ion-button icon-only (click)="goto_root()"\n        [disabled]="current_action.id == 0"\n        >\n        <ion-icon name="home"></ion-icon>\n      </button>\n      <button ion-button icon-only (click)="goto_parent()"\n        [disabled]="current_action.id == 0"\n        >\n        <ion-icon name="undo"></ion-icon>\n      </button>\n    </ion-buttons>\n    <ion-title text-center\n      (click)="select_item(current_action.id)"\n      >\n      <h6>{{ current_action.name }}</h6>\n    </ion-title>\n    <ion-buttons right>\n      <button ion-button [hidden]="is_selector" icon-only (click)="create_action()">\n        <ion-icon name="md-add"></ion-icon>\n      </button>\n    </ion-buttons>\n  </ion-toolbar>\n</ion-header>\n\n<ion-content class="outer-content">\n  <ion-list>\n  <ion-item [hidden]="child_id == blocked_id" *ngFor="let child_id of current_action.child_action_ids">\n    <button ion-button full clear style="margin: 0; font-size: 1em;" color="dark"\n      (click)="select_item(child_id)"\n      >\n      <span style="width: 100%; text-align: left;">\n      {{ task_data.get_action(child_id).name }}\n      </span>\n    </button>\n    <button ion-button icon-right item-right outline\n      (click)="goto_action(child_id)"\n      >\n      {{ \'ENTER\' | translate }}\n      <ion-icon name="ios-arrow-forward"></ion-icon>\n    </button>\n    <button ion-button icon-only item-right clear\n      (click)="item_menu(child_id)"\n      >\n      <ion-icon name="ios-more"></ion-icon>\n    </button>\n  </ion-item>\n  </ion-list>\n</ion-content>\n'/*ion-inline-end:"D:\data\projects\new\creations\2018 Catalyzer\catalyzer\src\components\actions-browser\actions-browser.html"*/
         }),
-        __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["l" /* NavController */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["l" /* NavController */]) === "function" && _a || Object, typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["b" /* AlertController */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["b" /* AlertController */]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["a" /* ActionSheetController */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["a" /* ActionSheetController */]) === "function" && _c || Object, typeof (_d = typeof __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["m" /* NavParams */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["m" /* NavParams */]) === "function" && _d || Object, typeof (_e = typeof __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["q" /* ViewController */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["q" /* ViewController */]) === "function" && _e || Object, typeof (_f = typeof __WEBPACK_IMPORTED_MODULE_2__models_models__["b" /* Global */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2__models_models__["b" /* Global */]) === "function" && _f || Object, typeof (_g = typeof __WEBPACK_IMPORTED_MODULE_2__models_models__["f" /* StorageManager */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2__models_models__["f" /* StorageManager */]) === "function" && _g || Object, typeof (_h = typeof __WEBPACK_IMPORTED_MODULE_2__models_models__["g" /* TaskData */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2__models_models__["g" /* TaskData */]) === "function" && _h || Object, typeof (_j = typeof __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["j" /* ModalController */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["j" /* ModalController */]) === "function" && _j || Object])
+        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["l" /* NavController */],
+            __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["b" /* AlertController */],
+            __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["a" /* ActionSheetController */],
+            __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["m" /* NavParams */],
+            __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["q" /* ViewController */],
+            __WEBPACK_IMPORTED_MODULE_2__models_models__["b" /* Global */],
+            __WEBPACK_IMPORTED_MODULE_2__models_models__["f" /* StorageManager */],
+            __WEBPACK_IMPORTED_MODULE_2__models_models__["g" /* TaskData */],
+            __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["j" /* ModalController */]])
     ], ActionsBrowserComp);
     return ActionsBrowserComp;
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j;
 }());
 
 //# sourceMappingURL=actions-browser.js.map
@@ -1964,7 +1974,7 @@ var ActionEditorComp = (function () {
     };
     ActionEditorComp = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({
-            selector: 'comp-action-editor',template:/*ion-inline-start:"D:\data\projects\new\creations\2018 Catalyzer\catalyzer\src\components\action-editor\action-editor.html"*/'<ion-header>\n  <ion-navbar>\n    <ion-buttons left>\n      <button ion-button (click)="close()" icon-only>\n        <ion-icon name="close"></ion-icon>\n      </button>\n    </ion-buttons>\n    <ion-title>\n      {{(is_new ? \'TITLE_ACTION_EDITOR_NEW\' : \'TITLE_ACTION_EDITOR\') | translate}}\n    </ion-title>\n    <ion-buttons right>\n      <button ion-button (click)="apply(true)">\n        {{ \'SAVE\' | translate }}\n      </button>\n    </ion-buttons>\n  </ion-navbar>\n  <!-- <ion-toolbar style="border-top: 1px solid #aaa;"> -->\n    <!-- <ion-buttons left> -->\n    \n    <!-- </ion-buttons> -->\n    <!-- <ion-title text-center><h6>{{ task_data.get_action(action_edit.parent_action_id).name }}</h6></ion-title> -->\n    <!-- <ion-buttons right> -->\n    \n    <!-- </ion-buttons> -->\n  <!-- </ion-toolbar> -->\n</ion-header>\n\n<ion-content class="outer-content">\n  <ion-list>\n    <ion-item>\n    <ion-label color="primary" stacked>{{ \'PARENT\' | translate }}</ion-label>\n    <ion-label>\n    <button ion-button item-right block outline\n      style="margin: 0;"\n      (click)="select_parent()"\n      >{{task_data.get_action(action_edit.parent_action_id).name}}</button>\n    </ion-label>\n    </ion-item>\n    <ion-item>\n    <ion-label color="primary" fixed>{{ \'NAME\' | translate }}</ion-label>\n    <ion-input [(ngModel)]="action_edit.name" [placeholder]="\'NAME_PLACEHOLDER\' | translate" clearInput></ion-input>\n    </ion-item>\n  </ion-list>\n</ion-content>\n'/*ion-inline-end:"D:\data\projects\new\creations\2018 Catalyzer\catalyzer\src\components\action-editor\action-editor.html"*/
+            selector: 'comp-action-editor',template:/*ion-inline-start:"D:\data\projects\new\creations\2018 Catalyzer\catalyzer\src\components\action-editor\action-editor.html"*/'<ion-header>\n  <ion-navbar>\n    <ion-buttons left>\n      <button ion-button (click)="close()" icon-only>\n        <ion-icon name="close"></ion-icon>\n      </button>\n    </ion-buttons>\n    <ion-title>\n      {{(is_new ? \'TITLE_ACTION_EDITOR_NEW\' : \'TITLE_ACTION_EDITOR\') | translate}}\n    </ion-title>\n    <ion-buttons right>\n      <button ion-button (click)="apply(true)">\n        {{ \'SAVE\' | translate }}\n      </button>\n    </ion-buttons>\n  </ion-navbar>\n  <!-- <ion-toolbar style="border-top: 1px solid #aaa;"> -->\n    <!-- <ion-buttons left> -->\n    \n    <!-- </ion-buttons> -->\n    <!-- <ion-title text-center><h6>{{ task_data.get_action(action_edit.parent_action_id).name }}</h6></ion-title> -->\n    <!-- <ion-buttons right> -->\n    \n    <!-- </ion-buttons> -->\n  <!-- </ion-toolbar> -->\n</ion-header>\n\n<ion-content class="outer-content">\n  <ion-list>\n    <ion-item>\n    <ion-label color="primary" stacked>\n      {{ \'PARENT\' | translate }}\n    </ion-label>\n    <ion-label>\n      <b>\n      {{task_data.get_action(action_edit.parent_action_id).name}}\n      </b>\n    </ion-label>\n    <button ion-button item-right outline\n      (click)="select_parent()"\n      >{{\'SELECT\' | translate}}\n    </button>\n    </ion-item>\n    <ion-item>\n    <ion-label color="primary" stacked>{{ \'NAME\' | translate }}</ion-label>\n    <ion-input type="text" [(ngModel)]="action_edit.name" [placeholder]="\'NAME_PLACEHOLDER\' | translate" clearInput></ion-input>\n    </ion-item>\n    <ion-item>\n    <ion-label color="primary" stacked>{{ \'NOTE\' | translate }}</ion-label>\n    <ion-textarea autosize type="text" [value]="action_edit.note" (blur)="action_edit.note = $event.target.value" [placeholder]="\'NOTE_PLACEHOLDER\' | translate"\n    ></ion-textarea>\n    </ion-item>\n  </ion-list>\n</ion-content>\n'/*ion-inline-end:"D:\data\projects\new\creations\2018 Catalyzer\catalyzer\src\components\action-editor\action-editor.html"*/
         }),
         __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["l" /* NavController */],
             __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["m" /* NavParams */],
@@ -1982,18 +1992,97 @@ var ActionEditorComp = (function () {
 
 /***/ }),
 
+/***/ 376:
+/***/ (function(module, exports) {
+
+//# sourceMappingURL=i-changable.js.map
+
+/***/ }),
+
+/***/ 377:
+/***/ (function(module, exports) {
+
+//# sourceMappingURL=i-serializable.js.map
+
+/***/ }),
+
+/***/ 378:
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return AutosizeDirective; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(0);
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+
+var AutosizeDirective = (function () {
+    function AutosizeDirective(element) {
+        this.element = element;
+    }
+    AutosizeDirective.prototype.onInput = function (textArea) {
+        this.adjust();
+    };
+    AutosizeDirective.prototype.ngOnInit = function () {
+        var _this = this;
+        setTimeout(function () { return _this.adjust(); }, 0);
+    };
+    AutosizeDirective.prototype.adjust = function () {
+        var textArea = this.element.nativeElement.getElementsByTagName('textarea')[0];
+        textArea.style.overflow = 'hidden';
+        textArea.style.height = 'auto';
+        textArea.style.height = textArea.scrollHeight + "px";
+    };
+    __decorate([
+        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["y" /* HostListener */])('input', ['$event.target']),
+        __metadata("design:type", Function),
+        __metadata("design:paramtypes", [Object]),
+        __metadata("design:returntype", void 0)
+    ], AutosizeDirective.prototype, "onInput", null);
+    AutosizeDirective = __decorate([
+        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["s" /* Directive */])({
+            selector: 'ion-textarea[autosize]'
+        }),
+        __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["t" /* ElementRef */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["t" /* ElementRef */]) === "function" && _a || Object])
+    ], AutosizeDirective);
+    return AutosizeDirective;
+    var _a;
+}());
+
+//# sourceMappingURL=autosize.js.map
+
+/***/ }),
+
 /***/ 58:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__util__ = __webpack_require__(336);
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return __WEBPACK_IMPORTED_MODULE_0__util__["a"]; });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__event__ = __webpack_require__(337);
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return __WEBPACK_IMPORTED_MODULE_1__event__["a"]; });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__action__ = __webpack_require__(338);
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return __WEBPACK_IMPORTED_MODULE_2__action__["a"]; });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__mission__ = __webpack_require__(339);
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "d", function() { return __WEBPACK_IMPORTED_MODULE_0__util__["a"]; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__i_changable__ = __webpack_require__(376);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__i_changable___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__i_changable__);
+/* unused harmony reexport IChangable */
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__i_serializable__ = __webpack_require__(377);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__i_serializable___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2__i_serializable__);
+/* unused harmony reexport ISerializable */
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__event__ = __webpack_require__(337);
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return __WEBPACK_IMPORTED_MODULE_3__event__["a"]; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__action__ = __webpack_require__(338);
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return __WEBPACK_IMPORTED_MODULE_4__action__["a"]; });
+/* unused harmony reexport ActionEditData */
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__mission__ = __webpack_require__(339);
 /* unused harmony reexport Mission */
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__autosize__ = __webpack_require__(378);
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return __WEBPACK_IMPORTED_MODULE_6__autosize__["a"]; });
+
+
+
 
 
 

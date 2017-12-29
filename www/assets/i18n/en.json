@@ -21,7 +21,6 @@
   "NAME": "Name",
   "PARENT": "Parent",
   "NAME_PLACEHOLDER": "Enter name",
-
   
   "BACK_BUTTON_TEXT": "Back",
   
@@ -38,8 +37,22 @@
   "DELETE_CHILDREN_MSG": "All children will also be deleted.",
   
   "DELETE": "Delete",
+  "SELECT": "Select",
   "CANCEL": "Cancel",
   "YES": "Yes",
+  
+  "BASIC_INFO": "Info",
+  "ADDITIONAL_INFO": "Additional Info",
+  
+  "NOTE": "Note",
+  "NOTE_PLACEHOLDER": "Enter note",
+  
+  
+  
+  
+  
+  
+  
   
 
   "EMAIL": "Email",
