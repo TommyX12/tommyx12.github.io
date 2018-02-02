@@ -67,9 +67,9 @@ set smartindent " Intelligently un-indent / indent new lines based on rules.
 " use temp folder for backup, undo and swap files
 " the // is there to make sure temp files are stored with absolute path so
 " no conflict
-set undodir=~/vim/temp//
-set directory=~/vim/temp//
-set backupdir=~/vim/temp//
+" set undodir=~/vim/temp//
+" set directory=~/vim/temp//
+" set backupdir=~/vim/temp//
 
 " timeout on waiting for command
 set timeoutlen=750
