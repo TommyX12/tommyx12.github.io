@@ -9,6 +9,11 @@ set background=dark
 " autocmd VimEnter * match Opeartor "[^a-zA-Z0-9\t ]"
 " autocmd WinEnter * match Opeartor "[^a-zA-Z0-9\t ]"
 
+augroup VCenterCursor
+au!
+au BufEnter,WinEnter,WinNew,VimResized *,*.* let &scrolloff=winheight(win_getid())/3
+augroup END
+
 let mapleader = ","
 
 " set cursorline
@@ -404,11 +409,20 @@ nnoremap <leader>m :TagbarClose<cr>:TagbarOpen<cr>
 autocmd InsertEnter * silent! exec "norm! " . line(".") . "G" . col(".") . "|"
 
 " bindings for easy split navigation
-nnoremap <C-h> <C-w>h
-nnoremap <del> <C-w>h
-nnoremap <C-j> <C-w>j
-nnoremap <C-k> <C-w>k
-nnoremap <C-l> <C-w>l
+" nnoremap <C-h> <C-w>h
+" nnoremap <del> <C-w>h
+" nnoremap <C-j> <C-w>j
+" nnoremap <C-k> <C-w>k
+" nnoremap <C-l> <C-w>l
+nnoremap <C-w><C-h> <C-w>h
+nnoremap <C-w><C-j> <C-w>j
+
+nnoremap <C-w><C-k> <C-w>k
+nnoremap <C-w><C-l> <C-w>l
+
+noremap <silent> m <C-o>zz
+noremap <silent> M <C-i>zz
+noremap <silent> <leader><leader>m m
 
 " fix delete problem
 fixdel
@@ -441,8 +455,8 @@ noremap <silent> gG G
 
 " noremap <silent> <C-h> 10h
 " noremap <silent> <C-l> 10l
-" noremap <silent> <C-j> 10gj
-" noremap <silent> <C-k> 10gk
+noremap <silent> <C-j> <C-d>
+noremap <silent> <C-k> <C-u>
 
 " binary search movement
 " nnoremap <expr> <C-h> BsmL()
